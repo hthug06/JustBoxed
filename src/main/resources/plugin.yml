@@ -1,0 +1,19 @@
+name: JustBoxed
+version: '1.0'
+main: fr.ht06.justBoxed.JustBoxed
+api-version: '1.21'
+description: A Boxed Block Plugin
+author: ht06
+commands:
+  boxed:
+    description: The main boxed command
+    aliases:
+      - bx
+      - box
+    usage: /boxed §b[args]
+
+  boxReload:
+    description: Reload the boxed plugin
+    aliases:
+      - bxrl
+    usage: /boxedreload

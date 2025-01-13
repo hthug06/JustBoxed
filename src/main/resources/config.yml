@@ -1,0 +1,14 @@
+#The basic size of the box (x*x)
+size: 10
+
+#If the search radius is too high, your server can get severe lag / can crash
+SearchRadius: 20
+
+#The delay before tp a player inside his box after create his world in tick (20 tick = 1 sec)
+tpDelay: 30
+
+#if every player needs to have the same seed / map, put it here, else put None
+baseSeed: "None"
+
+#Choose if you want to announce every advancement
+showAllAdvancements: false
