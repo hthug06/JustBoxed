@@ -4,11 +4,11 @@ package fr.ht06.justBoxed;
 import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.Commands.BoxedCommand;
 import fr.ht06.justBoxed.Events.PlayerListeners;
+import fr.ht06.justBoxed.TabCompleter.BoxedTabCompleter;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 

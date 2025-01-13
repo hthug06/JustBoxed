@@ -68,10 +68,22 @@ public class BoxedCommand implements CommandExecutor {
                 }
 
                 //Create world name
-                worldName = player.getName() + "_boxed";
+                int number = 1;
+                StringBuilder worldName = new StringBuilder(player.getName() + "_box");
+                List<String> dataList = Arrays.stream(JustBoxed.getInstance().getServer().getWorldContainer().list()).toList();
+
+                if (dataList.contains(worldName.toString())){
+                    worldName = new StringBuilder(player.getName()+ "_box" + "_" + number);
+                }
+
+                while (dataList.contains(worldName.toString())){
+                    number++;
+                    worldName = new StringBuilder(player.getName() + "_box" + "_" + number);
+
+                }
 
                 //Create everything else (the world, the box)
-                searchGoodWorld(worldName, seed, player);
+                searchGoodWorld(worldName.toString(), seed, player);
             }
 
             //Delete the box
@@ -85,6 +97,11 @@ public class BoxedCommand implements CommandExecutor {
 
                 //Player have 100% a box, so get the player's box
                 Box box = manager.getBoxByPlayer(player.getUniqueId());
+
+                if (manager.isMember(box, player)){
+                    player.sendMessage("§cOnly the owner of the box can delete it.");
+                    return true;
+                }
 
                 //Get the world Name
                 worldName = box.getWorldName();
@@ -103,21 +120,23 @@ public class BoxedCommand implements CommandExecutor {
             //invite a player in your box
             else if(args[0].equalsIgnoreCase("invite")){
 
-                if (args[1].equalsIgnoreCase(player.getName())){
-                    player.sendMessage("§cYou can't invite yourself.");
-                }
-
                 //if the args are not equal to 2
                 if (args.length != 2){
-                    player.sendMessage("/box invite <player>");
+                    player.sendMessage("§c/box invite <player>");
                     return true;
                 }
 
-                Player playerInvited = Bukkit.getPlayer(args[1]);
+                Player playerInvited = Bukkit.getPlayerExact((args[1]));
 
                 //Verification if the player exist
                 if (playerInvited == null || !playerInvited.isOnline()){
                     player.sendMessage("§cThis player is offline or didn't exist");
+                    return true;
+                }
+
+                //if it's the same player
+                if (playerInvited.getUniqueId() == player.getUniqueId()){
+                    player.sendMessage("§cYou can't invite yourself.");
                     return true;
                 }
 
@@ -127,13 +146,30 @@ public class BoxedCommand implements CommandExecutor {
                     return true;
                 }
 
-                Box playerBox = manager.getBoxByPlayer(player.getUniqueId());
-                playerBox.addInvitation(new InviteRunnable(playerBox, playerInvited.getUniqueId()));
+                Box box = manager.getBoxByPlayer(player.getUniqueId());
+                box.addInvitation(new InviteRunnable(box, playerInvited.getUniqueId()));
+
+                if (!manager.isOwner(box, player)){
+                    player.sendMessage("§cYou are not the owner of this box, contact him/her to invite this player.");
+                    return true;
+                }
+
+                if (box.getMembers().size() >= JustBoxed.getInstance().getConfig().getInt("memberLimit")){
+                    player.sendMessage("You already reach the maximum number of members.");
+                    return true;
+                }
+
+                if (box.getMembers().contains(playerInvited.getUniqueId())){
+                    player.sendMessage("§cThis player is already part of your box");
+                    return true;
+                }
+
+                player.sendMessage("§aInvitation send to " + playerInvited.getName());
 
                 int timeRemaining = JustBoxed.getInstance().getConfig().getInt("inviteTime");
-                Component msg = Component.text(player.getName() + "invite you to his box", NamedTextColor.GREEN)
-                                        .append(Component.text("Click here to join him.")
-                                                .clickEvent(ClickEvent.runCommand("bx join " + player.getName()))
+                Component msg = Component.text(player.getName() + " invite you to his box ", NamedTextColor.GREEN)
+                                        .append(Component.text("click here to join him.")
+                                                .clickEvent(ClickEvent.runCommand("/bx join " + player.getName()))
                                                 .hoverEvent(HoverEvent.showText(Component.text("Click here to accept the invitation"))))
                         .append(Component.text(" (you have "+ timeRemaining +" seconds to accept the invitation)", NamedTextColor.GRAY)
                                 .decorate(TextDecoration.ITALIC));
@@ -143,7 +179,20 @@ public class BoxedCommand implements CommandExecutor {
 
             //Join a box
             else if (args[0].equalsIgnoreCase("join")){
-                Player playerWhoInvite = Bukkit.getOfflinePlayer(args[1]).getPlayer();
+
+                //if the args are not equal to 2
+                if (args.length != 2){
+                    player.sendMessage("§c/box join <player>");
+                    return true;
+                }
+
+                if (manager.hasBox(player.getUniqueId())){
+                    player.sendMessage("§cYou already have a box, leave him to join another box");
+                    return true;
+                }
+
+                //OfflinePlayer because you can accept the invitation even if the inviter is offline
+                OfflinePlayer playerWhoInvite = Bukkit.getOfflinePlayer(args[1]);
 
                 //if the player you try to join doesn't have a box
                 if (!manager.hasBox(playerWhoInvite.getUniqueId())){
@@ -155,20 +204,153 @@ public class BoxedCommand implements CommandExecutor {
                 Box box = manager.getBoxByPlayer(playerWhoInvite.getUniqueId());
 
                 //Checks if he invites you
-                if (box.isinvited(player.getUniqueId())){
+                if (box.isInvited(player.getUniqueId())){
 
                     //if yes, add you to the box, delete the invitation and send a message
                     box.addMember(player.getUniqueId());
-                    box.removeInvitation(box.getPlayerInvitation(player.getUniqueId()));
-                    player.sendMessage("§aYou join "+ box.getName());
+                    box.removeInvitation(player.getUniqueId());
+                    box.broadcastMessage(Component.text(player.getName() + " has joined the box !", NamedTextColor.GREEN));
                 }
 
                 //if he didn't invite you, send a message
                 else{
                     player.sendMessage("§cYou didn't get an invitation from this player");
                 }
+            }
+
+            else if (args[0].equalsIgnoreCase("leave")) {
+
+                //Verification if the player has a box (maybe deprecated later)
+                if (!manager.hasBox(player.getUniqueId())){
+                    player.sendMessage("§cYou don't have a box");
+                    return true;
+                }
+
+                Box box = manager.getBoxByPlayer(player.getUniqueId());
+
+                if (manager.isOwner(box, player)){
+                    player.sendMessage("§cYou can't leave your own box, transfer the box to someone else or delete it (/box delete)");
+                    return true;
+                }
+
+                box.removeMember(player.getUniqueId());
+                box.broadcastMessage(Component.text(player.getName() + " has left the box !", NamedTextColor.GOLD));
+                player.sendMessage("§aYou have successfully left the box !");
+            }
+
+            else if (args[0].equalsIgnoreCase("setOwner")) {
+
+                //if the args are not equal to 2
+                if (args.length != 2){
+                    player.sendMessage("§c/box setowner <player>");
+                    return true;
+                }
+
+                //Verification if the player has a box (maybe deprecated later)
+                if (!manager.hasBox(player.getUniqueId())){
+                    player.sendMessage("§cYou don't have a box");
+                    return true;
+                }
+
+                Box box = manager.getBoxByPlayer(player.getUniqueId());
+
+                if (!manager.isOwner(box, player)){
+                    player.sendMessage("§cYou are not the owner of this box, only the owner can do this command");
+                    return true;
+                }
+
+                OfflinePlayer futureOwner = Bukkit.getPlayerExact(args[1]);
+
+                if (futureOwner == null || !box.getMembers().contains(futureOwner.getUniqueId())){
+                    player.sendMessage("§cThis player is not in your box");
+                    return true;
+                }
+
+                box.addMember(box.getOwner());
+                box.setOwner(futureOwner.getUniqueId());
+
+                //send to the ancien owner
+                player.sendMessage("§6"+futureOwner.getName() + " is now the owner of the box !");
+
+                if (futureOwner.isOnline()){
+                    Player future = Bukkit.getPlayer(futureOwner.getUniqueId());
+                    future.sendMessage("§6You are now the owner of the box !");
+                }
 
             }
+
+            else if (args[0].equalsIgnoreCase("kick")) {
+
+                //if the args are not equal to 2
+                if (args.length != 2){
+                    player.sendMessage("§c/box kick <player>");
+                    return true;
+                }
+
+                //Verification if the player has a box (maybe deprecated later)
+                if (!manager.hasBox(player.getUniqueId())){
+                    player.sendMessage("§cYou don't have a box");
+                    return true;
+                }
+
+                Box box = manager.getBoxByPlayer(player.getUniqueId());
+
+                if (!manager.isOwner(box, player)){
+                    player.sendMessage("§cYou are not the owner of this box, only the owner can do this command");
+                    return true;
+                }
+
+                OfflinePlayer playerToKick = Bukkit.getPlayerExact(args[1]);
+
+                //Check if the player is in the box
+                if (playerToKick == null || !box.getMembers().contains(playerToKick.getUniqueId())){
+                    player.sendMessage("§cThis player is not in your box");
+                    return true;
+                }
+
+                box.removeMember(playerToKick.getUniqueId());
+                box.broadcastMessage(Component.text(playerToKick.getName() + " was kicked from the box !", NamedTextColor.GOLD));
+
+                //Verification if the player exists
+                if (playerToKick != null && playerToKick.isOnline()){
+                    Player playerToKickPlayer = playerToKick.getPlayer();
+                    playerToKickPlayer.sendMessage("§6You have been kicked from " +box.getName()+"!");
+                }
+
+            }
+
+            else if(args[0].equalsIgnoreCase("team")) {
+                //Verification if the player has a box (maybe deprecated later)
+                if (!manager.hasBox(player.getUniqueId())){
+                    player.sendMessage("§cYou don't have a box");
+                    return true;
+                }
+
+                Box box = manager.getBoxByPlayer(player.getUniqueId());
+
+                if (box.isOnline(box.getOwner())){
+                    player.sendMessage("Owner: "+ Bukkit.getOfflinePlayer(box.getOwner()).getName() + " §a•");
+                }
+                else {
+                    player.sendMessage("Owner: "+ Bukkit.getOfflinePlayer(box.getOwner()).getName() + " §c•");
+                }
+
+                StringBuilder st = new StringBuilder();
+
+                box.getMembers().forEach(member -> {
+                    if (box.isOnline(member)){
+                        st.append("§r").append(Bukkit.getOfflinePlayer(member).getName()).append(" §a• ");
+                    }
+                    else {
+                        st.append("§r").append(Bukkit.getOfflinePlayer(member).getName()).append(" §c• ");
+                    }
+                });
+                if (!st.isEmpty()){
+                    player.sendMessage("Member: " + st);
+                }
+
+            }
+
 
             //tp to the spawn of the box
             else if (args[0].equalsIgnoreCase("tp")){
@@ -215,7 +397,7 @@ public class BoxedCommand implements CommandExecutor {
                         loc = new Location(Bukkit.getWorld(worldName), loc.getX(),Bukkit.getWorld(worldName).getHighestBlockYAt(loc.getBlockX(), loc.getBlockZ()), loc.getZ());
 
                         player.teleport(loc.clone().add(1, 1, 0));
-                        Box box = new Box(worldName, player.getUniqueId(), loc.clone().add(1, 1, 0));
+                        Box box = new Box(worldName, player.getUniqueId(), loc.clone().add(1, 1, 0), worldName);
                         manager.add(box);
                     }
                     else {

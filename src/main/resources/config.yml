@@ -15,3 +15,9 @@ showAllAdvancements: false
 
 #The time before the invitation expire (in second)
 inviteTime: 60
+
+#Define the maximum number of player a box can have (the owner didn't count as a member)
+memberLimit: 5
+
+#Define how many block the border is going to expand with every advancement
+borderExpand: 2

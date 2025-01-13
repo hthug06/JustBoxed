@@ -33,7 +33,7 @@ public class PlayerListeners implements Listener {
 
                 //get the box and add the size to the worldBorder
                 Box box = boxManager.getBoxByPlayer(player.getUniqueId());
-                box.setSize(box.getSize() + 2);
+                box.setSize(box.getSize() + JustBoxed.getInstance().getConfig().getInt("borderExpand"));
                 box.addDoneAdvancement(event.getAdvancement());
 
                 //Send a message to the player

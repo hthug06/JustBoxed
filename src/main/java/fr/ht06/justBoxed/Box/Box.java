@@ -4,6 +4,7 @@ import fr.ht06.justBoxed.AdvancementManager;
 import fr.ht06.justBoxed.JustBoxed;
 import fr.ht06.justBoxed.Runnable.InviteRunnable;
 import fr.ht06.justBoxed.WorldBorderManager;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.advancement.Advancement;
@@ -14,22 +15,22 @@ import java.util.List;
 import java.util.UUID;
 
 public class Box {
-    String name;
-    UUID owner;
-    List<UUID> members;
-    org.bukkit.Location spawn;
-    String worldName;
-    int size = JustBoxed.getInstance().getConfig().getInt("size");
-    List<Advancement> completedAdvancements = new ArrayList<>();
-    List<InviteRunnable> invitedPlayers = new ArrayList<>();
+    private String name;
+    private UUID owner;
+    private List<UUID> members = new ArrayList<>();
+    private org.bukkit.Location spawn;
+    private String worldName;
+    private int size = JustBoxed.getInstance().getConfig().getInt("size");
+    private List<Advancement> completedAdvancements = new ArrayList<>();
+    private List<InviteRunnable> invitedPlayers = new ArrayList<>();
 
-    public Box(String name, UUID owner, org.bukkit.Location spawn) {
+    public Box(String name, UUID owner, org.bukkit.Location spawn, String worldName) {
         this.name = name;
         this.owner = owner;
         this.spawn = spawn;
+        this.worldName = worldName;
 
         Player player = Bukkit.getPlayer(owner);
-        this.worldName = player.getName() + "_boxed";
         WorldBorderManager.setWorldBorder(this);
 
         //revoke all player's advancement cause this is the goal of this gamemode lol
@@ -45,12 +46,16 @@ public class Box {
         return owner;
     }
 
+    public void setOwner(UUID uuid) {
+        this.owner = uuid;
+    }
+
     public List<UUID> getMembers() {
         return members;
     }
 
     public void addMember(UUID uuid) {
-        members.add(uuid);
+        this.members.add(uuid);
     }
 
     public void removeMember(UUID uuid) {
@@ -90,10 +95,10 @@ public class Box {
 
     //All about invitation
     public InviteRunnable getPlayerInvitation(UUID uuid) {
-        invitedPlayers.stream()
+        List<InviteRunnable> invit = invitedPlayers.stream()
                 .filter(inviteRunnable -> inviteRunnable.getInvitedUUID().equals(uuid))
                 .toList();
-        return invitedPlayers.getFirst();
+        return invit.getFirst();
     }
 
     public void addInvitation(InviteRunnable runnable) {
@@ -104,10 +109,34 @@ public class Box {
         invitedPlayers.remove(runnable);
     }
 
-    public boolean isinvited(UUID uuid) {
-        invitedPlayers.stream()
+    public void removeInvitation(UUID uuid) {
+        invitedPlayers.removeIf(inviteRunnable -> inviteRunnable.getInvitedUUID().equals(uuid));
+    }
+
+    public boolean isInvited(UUID uuid) {
+        List<InviteRunnable> invit = invitedPlayers.stream()
                 .filter(inviteRunnable -> inviteRunnable.getInvitedUUID().equals(uuid))
                 .toList();
-        return invitedPlayers.isEmpty();
+        return !invit.isEmpty();
+    }
+
+    public void broadcastMessage(Component message) {
+
+        Player player = Bukkit.getPlayer(owner);
+
+        if (player != null && player.isOnline()) {
+            player.sendMessage(message);
+        }
+
+        members.forEach(uuid -> {
+            Player member = Bukkit.getPlayer(uuid);
+            if (member != null && member.isOnline()) {
+                member.sendMessage(message);
+            }
+        });
+    }
+
+    public boolean isOnline(UUID uuid) {
+        return Bukkit.getOfflinePlayer(uuid).isOnline();
     }
 }
