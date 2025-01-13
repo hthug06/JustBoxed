@@ -9,11 +9,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AdvancementManager {
 
-    public static void grantAdvancement(Player player, String advancement){
+    public static void grantAdvancement(Player player, NamespacedKey advancement){
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);});
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "advancement grant " + player.getName() +" only " + advancement);
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, true);});
     }
 
-    public static void revokeAdvancement(Player player, String advancement){
+    public static void revokeAdvancement(Player player, NamespacedKey advancement){
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke " + player.getName() +" only " + advancement);
     }
 
@@ -21,7 +23,7 @@ public class AdvancementManager {
         Bukkit.getWorld(player.getWorld().getName()).setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false);
         Bukkit.advancementIterator().forEachRemaining(advancement -> {
             if (player.getAdvancementProgress(advancement).isDone()) {
-                revokeAdvancement(player, advancement.getKey().toString());
+                revokeAdvancement(player, advancement.getKey());
             }
         });
         Bukkit.getWorld(player.getWorld().getName()).setGameRule(GameRule.SEND_COMMAND_FEEDBACK, true);

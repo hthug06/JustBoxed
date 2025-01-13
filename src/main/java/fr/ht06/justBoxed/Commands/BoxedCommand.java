@@ -1,5 +1,6 @@
 package fr.ht06.justBoxed.Commands;
 
+import fr.ht06.justBoxed.AdvancementManager;
 import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.JustBoxed;
@@ -15,6 +16,7 @@ import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.codehaus.plexus.util.FileUtils;
@@ -107,13 +109,14 @@ public class BoxedCommand implements CommandExecutor {
                 worldName = box.getWorldName();
 
                 //Delete it
-                deleteWorld(player, worldName);
+                deleteWorld(worldName);
 
                 //remove the box from the manager
                 manager.removeBox(manager.getBoxByPlayer(player.getUniqueId()));
 
                 //Send a message to the player
                 player.sendMessage(Component.text("You successfully deleted your box", TextColor.color(0xa93226)));
+                AdvancementManager.revokeAllAdvancement(player);
 
             }
 
@@ -210,6 +213,10 @@ public class BoxedCommand implements CommandExecutor {
                     box.addMember(player.getUniqueId());
                     box.removeInvitation(player.getUniqueId());
                     box.broadcastMessage(Component.text(player.getName() + " has joined the box !", NamedTextColor.GREEN));
+
+                    box.getCompletedAdvancements().forEach(adv -> AdvancementManager.grantAdvancement(player, adv));
+
+                    player.teleport(box.getSpawn());
                 }
 
                 //if he didn't invite you, send a message
@@ -236,6 +243,7 @@ public class BoxedCommand implements CommandExecutor {
                 box.removeMember(player.getUniqueId());
                 box.broadcastMessage(Component.text(player.getName() + " has left the box !", NamedTextColor.GOLD));
                 player.sendMessage("§aYou have successfully left the box !");
+                AdvancementManager.revokeAllAdvancement(player);
             }
 
             else if (args[0].equalsIgnoreCase("setOwner")) {
@@ -310,6 +318,11 @@ public class BoxedCommand implements CommandExecutor {
 
                 box.removeMember(playerToKick.getUniqueId());
                 box.broadcastMessage(Component.text(playerToKick.getName() + " was kicked from the box !", NamedTextColor.GOLD));
+                if (playerToKick.isOnline()){
+                    //need to work on this one, because this won't work if the player is offline
+                    AdvancementManager.revokeAllAdvancement(playerToKick.getPlayer());
+                }
+
 
                 //Verification if the player exists
                 if (playerToKick != null && playerToKick.isOnline()){
@@ -361,6 +374,11 @@ public class BoxedCommand implements CommandExecutor {
                 else {
                     player.sendMessage("§cYou do not have a box");
                 }
+            }
+
+            else{
+                //To finish later with /box help
+                sender.sendMessage("§c this command does not exist");
             }
         }
 
@@ -446,15 +464,17 @@ public class BoxedCommand implements CommandExecutor {
         return loc;
     }
 
-    public void deleteWorld(Player player, String worldName) {
+    public void deleteWorld(String worldName) {
         //Récup le monde
         World w = Bukkit.getWorld(worldName);
 
         //On téléporte le joueur dans le monde de base au 0 0
+        for (Player player : w.getPlayers()) {
         player.teleport(new Location(Bukkit.getWorld("world"),
                 0,
-                Bukkit.getWorld("world").getHighestBlockYAt(0, 0),
+                Bukkit.getWorld("world").getHighestBlockYAt(0, 0)+1,
                 0));
+        }
 
         //On delete le fichier du monde
         File folder = Bukkit.getWorld(w.getName()).getWorldFolder();

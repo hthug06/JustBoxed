@@ -7,8 +7,10 @@ import fr.ht06.justBoxed.WorldBorderManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +23,7 @@ public class Box {
     private org.bukkit.Location spawn;
     private String worldName;
     private int size = JustBoxed.getInstance().getConfig().getInt("size");
-    private List<Advancement> completedAdvancements = new ArrayList<>();
+    private List<NamespacedKey> completedAdvancements = new ArrayList<>();
     private List<InviteRunnable> invitedPlayers = new ArrayList<>();
 
     public Box(String name, UUID owner, org.bukkit.Location spawn, String worldName) {
@@ -68,7 +70,7 @@ public class Box {
 
     public void setSize(int size) {
         this.size = size;
-        WorldBorderManager.setWorldBorder(this, 5);
+        WorldBorderManager.setWorldBorder(this, 2);
     }
 
     public String getWorldName() {
@@ -79,12 +81,12 @@ public class Box {
         return spawn;
     }
 
-    public void addDoneAdvancement(Advancement advancement) {
+    public void addDoneAdvancement(@NotNull NamespacedKey advancement) {
         completedAdvancements.add(advancement);
         //don't work if any player are offline
-        AdvancementManager.grantAdvancement(Bukkit.getPlayer(owner), advancement.getKey().getKey());
+        AdvancementManager.grantAdvancement(Bukkit.getPlayer(owner), advancement);
         members.forEach(uuid -> {
-            AdvancementManager.grantAdvancement(Bukkit.getPlayer(uuid), advancement.getKey().getKey());
+            AdvancementManager.grantAdvancement(Bukkit.getPlayer(uuid), advancement);
         });
     }
 
@@ -138,5 +140,9 @@ public class Box {
 
     public boolean isOnline(UUID uuid) {
         return Bukkit.getOfflinePlayer(uuid).isOnline();
+    }
+
+    public List<NamespacedKey> getCompletedAdvancements() {
+        return completedAdvancements;
     }
 }
