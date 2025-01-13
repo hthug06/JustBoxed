@@ -9,7 +9,6 @@ gen
 ### Localhost server ###
 server
 
-
 ### Gradle ###
 .gradle
 build/

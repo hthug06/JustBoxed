@@ -12,3 +12,6 @@ baseSeed: "None"
 
 #Choose if you want to announce every advancement
 showAllAdvancements: false
+
+#The time before the invitation expire (in second)
+inviteTime: 60

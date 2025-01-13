@@ -29,9 +29,9 @@ public class BoxManager {
         return null;
     }
 
-    public boolean hasBox(Player player) {
+    public boolean hasBox(UUID uuid) {
         for (Box box : boxes) {
-            if (box.getOwner().equals(player.getUniqueId())) {
+            if (box.getOwner().equals(uuid)) {
                 return true;
             }
         }

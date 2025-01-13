@@ -3,7 +3,10 @@ package fr.ht06.justBoxed.Commands;
 import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.JustBoxed;
+import fr.ht06.justBoxed.Runnable.InviteRunnable;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -38,17 +41,23 @@ public class BoxedCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
+
+        //No args
         if (args.length == 0){
-            player.sendMessage("§cUsage: /boxed create | delete");
+            player.sendMessage("§cUsage: /boxed create | delete | invite | join | tp");
         }
 
+        // Args
         else {
+
+            //Create
             if (args[0].equalsIgnoreCase("create")) {
-                if (manager.hasBox(player)){
+                if (manager.hasBox(player.getUniqueId())){
                     player.sendMessage("§cYou already have a box");
                     return true;
                 }
 
+                //Create or import the seed
                 long seed;
                 if (JustBoxed.getInstance().getConfig().get("baseSeed").getClass() == Integer.class || JustBoxed.getInstance().getConfig().get("baseSeed").getClass() == Long.class){
                     seed = JustBoxed.getInstance().getConfig().getLong("baseSeed");
@@ -58,27 +67,118 @@ public class BoxedCommand implements CommandExecutor {
                     seed = rand.nextLong(Long.MIN_VALUE, Long.MAX_VALUE);
                 }
 
-                //Nom du monde
+                //Create world name
                 worldName = player.getName() + "_boxed";
 
+                //Create everything else (the world, the box)
                 searchGoodWorld(worldName, seed, player);
             }
 
+            //Delete the box
             else if(args[0].equalsIgnoreCase("delete")){
 
-                if (!manager.hasBox(player)){
+                //player don't have a box (he is the owner)
+                if (!manager.hasBox(player.getUniqueId())){
                     player.sendMessage("§cYou do not have a box (/box create)");
                     return true;
                 }
 
-                player.sendMessage(Component.text("You successfully deleted your box", TextColor.color(0xa93226)));
+                //Player have 100% a box, so get the player's box
+                Box box = manager.getBoxByPlayer(player.getUniqueId());
 
-                //Récuperer le nom du monde
-                worldName = player.getName() + "_boxed";// + JustBoxed.numberCreated.get(player);
+                //Get the world Name
+                worldName = box.getWorldName();
 
+                //Delete it
                 deleteWorld(player, worldName);
 
+                //remove the box from the manager
                 manager.removeBox(manager.getBoxByPlayer(player.getUniqueId()));
+
+                //Send a message to the player
+                player.sendMessage(Component.text("You successfully deleted your box", TextColor.color(0xa93226)));
+
+            }
+
+            //invite a player in your box
+            else if(args[0].equalsIgnoreCase("invite")){
+
+                if (args[1].equalsIgnoreCase(player.getName())){
+                    player.sendMessage("§cYou can't invite yourself.");
+                }
+
+                //if the args are not equal to 2
+                if (args.length != 2){
+                    player.sendMessage("/box invite <player>");
+                    return true;
+                }
+
+                Player playerInvited = Bukkit.getPlayer(args[1]);
+
+                //Verification if the player exist
+                if (playerInvited == null || !playerInvited.isOnline()){
+                    player.sendMessage("§cThis player is offline or didn't exist");
+                    return true;
+                }
+
+                //Verification if the player has a box (maybe deprecated later)
+                if (!manager.hasBox(player.getUniqueId())){
+                    player.sendMessage("§cYou don't have a box");
+                    return true;
+                }
+
+                Box playerBox = manager.getBoxByPlayer(player.getUniqueId());
+                playerBox.addInvitation(new InviteRunnable(playerBox, playerInvited.getUniqueId()));
+
+                int timeRemaining = JustBoxed.getInstance().getConfig().getInt("inviteTime");
+                Component msg = Component.text(player.getName() + "invite you to his box", NamedTextColor.GREEN)
+                                        .append(Component.text("Click here to join him.")
+                                                .clickEvent(ClickEvent.runCommand("bx join " + player.getName()))
+                                                .hoverEvent(HoverEvent.showText(Component.text("Click here to accept the invitation"))))
+                        .append(Component.text(" (you have "+ timeRemaining +" seconds to accept the invitation)", NamedTextColor.GRAY)
+                                .decorate(TextDecoration.ITALIC));
+
+                playerInvited.sendMessage(msg);
+            }
+
+            //Join a box
+            else if (args[0].equalsIgnoreCase("join")){
+                Player playerWhoInvite = Bukkit.getOfflinePlayer(args[1]).getPlayer();
+
+                //if the player you try to join doesn't have a box
+                if (!manager.hasBox(playerWhoInvite.getUniqueId())){
+                    player.sendMessage("§cThis player doesn't have a box");
+                    return true;
+                }
+
+                //get the player you try to join box
+                Box box = manager.getBoxByPlayer(playerWhoInvite.getUniqueId());
+
+                //Checks if he invites you
+                if (box.isinvited(player.getUniqueId())){
+
+                    //if yes, add you to the box, delete the invitation and send a message
+                    box.addMember(player.getUniqueId());
+                    box.removeInvitation(box.getPlayerInvitation(player.getUniqueId()));
+                    player.sendMessage("§aYou join "+ box.getName());
+                }
+
+                //if he didn't invite you, send a message
+                else{
+                    player.sendMessage("§cYou didn't get an invitation from this player");
+                }
+
+            }
+
+            //tp to the spawn of the box
+            else if (args[0].equalsIgnoreCase("tp")){
+                if (manager.hasBox(player.getUniqueId())){
+                    Box box = manager.getBoxByPlayer(player.getUniqueId());
+                    player.teleport(box.getSpawn());
+                }
+                else {
+                    player.sendMessage("§cYou do not have a box");
+                }
             }
         }
 
@@ -86,7 +186,7 @@ public class BoxedCommand implements CommandExecutor {
     }
 
     public void createWorld(String worldName, long seed) {
-        //try catch car on a une erreur quand on le créer async
+        //try catch because we get an error because we create it async
         try{
             new WorldCreator(worldName)
                     .seed(seed)
@@ -98,7 +198,7 @@ public class BoxedCommand implements CommandExecutor {
     }
 
     public void searchGoodWorld(String worldName, long seed, Player player) {
-        //LE SEUL EN ASYNC
+        //ONLY ONE ASYNC
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -113,7 +213,7 @@ public class BoxedCommand implements CommandExecutor {
                     Location loc = searchNearestWood(worldName, player);
                     if (loc != null){
                         loc = new Location(Bukkit.getWorld(worldName), loc.getX(),Bukkit.getWorld(worldName).getHighestBlockYAt(loc.getBlockX(), loc.getBlockZ()), loc.getZ());
-//                        player.sendMessage(Component.text("You found a box"));
+
                         player.teleport(loc.clone().add(1, 1, 0));
                         Box box = new Box(worldName, player.getUniqueId(), loc.clone().add(1, 1, 0));
                         manager.add(box);

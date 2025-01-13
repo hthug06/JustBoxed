@@ -25,11 +25,18 @@ public class PlayerListeners implements Listener {
     public void onAdvancement(PlayerAdvancementDoneEvent event) {
         Player player = event.getPlayer();
 
+        //if this is not a 'recipe advancement'
         if(!event.getAdvancement().getKey().getKey().contains("recipes")) {
-            if (boxManager.hasBox(player)) {
+
+            //If the player have a box
+            if (boxManager.hasBox(player.getUniqueId())) {
+
+                //get the box and add the size to the worldBorder
                 Box box = boxManager.getBoxByPlayer(player.getUniqueId());
                 box.setSize(box.getSize() + 2);
+                box.addDoneAdvancement(event.getAdvancement());
 
+                //Send a message to the player
                 player.sendMessage(Component.text("Achievement complete: ").append(event.getAdvancement().displayName()));
             }
         }

@@ -47,6 +47,7 @@ public final class JustBoxed extends JavaPlugin {
         if (command.getName().equalsIgnoreCase("boxreload")) {
             sender.sendMessage("§cConfig reloaded");
             reloadConfig();
+
         }
         return true;
     }
