@@ -64,47 +64,40 @@ public class PlayerListeners implements Listener {
         }
 
         //if the player didn't have a box, he can't interact
-        if(!boxManager.hasBox(player.getUniqueId())) {
-            player.sendMessage("§cVous ne pouvez pas interagir avec des block qui ne sont pas dans votre box.");
-            event.setCancelled(true);
-            return;
-        }
-
-        Box box = boxManager.getBoxByPlayer(player.getUniqueId());
-
-        //if the player is not on his box, he can't interact
-        if (!player.getWorld().getName().equals(box.getWorldName())){
-            player.sendMessage("§cVous ne pouvez pas interagir avec des block qui ne sont pas dans votre box.");
-            event.setCancelled(true);
-            return;
+        if(!boxManager.hasBox(player.getUniqueId()) ||
+                !boxManager.getBoxByPlayer(player.getUniqueId()).getWorldName().equals(player.getWorld().getName())) {
+            if (event.getItem().getType().isEdible()){
+                player.sendMessage("§cYou can't do that on other players box");
+                event.setCancelled(true);
+            }
         }
     }
 
-    @EventHandler
-    public void onBreak(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-
-        //We didn't care about the main world
-        if (player.getWorld().getName().equals("world") || player.getWorld().getName().equals("world_nether") || player.getWorld().getName().equals("world_the_end")) {
-            return;
-        }
-
-        //if the player didn't have a box, he can't interact
-        if(!boxManager.hasBox(player.getUniqueId())) {
-            player.sendMessage("§cVous ne pouvez pas interagir avec des block qui ne sont pas dans votre box.");
-            event.setCancelled(true);
-            return;
-        }
-
-        Box box = boxManager.getBoxByPlayer(player.getUniqueId());
-
-        //if the player is not on his box, he can't interact
-        if (!player.getWorld().getName().equals(box.getWorldName())){
-            player.sendMessage("§cVous ne pouvez pas interagir avec des block qui ne sont pas dans votre box.");
-            event.setCancelled(true);
-            return;
-        }
-    }
+//    @EventHandler
+//    public void onBreak(BlockBreakEvent event) {
+//        Player player = event.getPlayer();
+//
+//        //We didn't care about the main world
+//        if (player.getWorld().getName().equals("world") || player.getWorld().getName().equals("world_nether") || player.getWorld().getName().equals("world_the_end")) {
+//            return;
+//        }
+//
+//        //if the player didn't have a box, he can't interact
+//        if(!boxManager.hasBox(player.getUniqueId())) {
+//            player.sendMessage("§cYou can't break block on other players box");
+//            event.setCancelled(true);
+//            return;
+//        }
+//
+//        Box box = boxManager.getBoxByPlayer(player.getUniqueId());
+//
+//        //if the player is not on his box, he can't interact
+//        if (!player.getWorld().getName().equals(box.getWorldName())){
+//            player.sendMessage("§cYou can't break block on other players box");
+//            event.setCancelled(true);
+//            return;
+//        }
+//    }
 
     @EventHandler
     public void onHit(EntityDamageEvent event) {
@@ -125,7 +118,7 @@ public class PlayerListeners implements Listener {
 
         //if the player didn't have a box, he can't interact
         if(!boxManager.hasBox(player.getUniqueId())) {
-            player.sendMessage("§cVous ne pouvez pas interagir avec des block qui ne sont pas dans votre box.");
+            player.sendMessage("§cYou can't attack in other players box");
             event.setCancelled(true);
             return;
         }
@@ -134,7 +127,7 @@ public class PlayerListeners implements Listener {
 
         //if the player is not on his box, he can't interact
         if (!player.getWorld().getName().equals(box.getWorldName())){
-            player.sendMessage("§cVous ne pouvez pas interagir avec des block qui ne sont pas dans votre box.");
+            player.sendMessage("§cYou can't attack on other players box");
             event.setCancelled(true);
             return;
         }

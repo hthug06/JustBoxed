@@ -3,6 +3,7 @@ package fr.ht06.justBoxed.TabCompleter;
 import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.JustBoxed;
+import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -21,7 +22,10 @@ public class BoxedTabCompleter implements TabCompleter {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        List<String> players = JustBoxed.getInstance().getServer().getOnlinePlayers().stream().map(Player::getName).toList();
+        List<String> players = JustBoxed.getInstance().getServer().getOnlinePlayers()
+                .stream()
+                .map(Player::getName)
+                .toList();
 
         Player player = (Player) sender;
 
@@ -31,7 +35,15 @@ public class BoxedTabCompleter implements TabCompleter {
 
         //No box
         else {
-            return List.of("create", "join", "visit");
+            if (args.length == 1) {
+                return List.of("create", "join", "visit");
+            }
+            if (args.length == 2) {
+                return players;
+            }
+            else {
+                return List.of();
+            }
         }
 
         //Owner
@@ -41,7 +53,7 @@ public class BoxedTabCompleter implements TabCompleter {
                         .sorted()
                         .collect(Collectors.toList());
             }
-            if(args.length == 2) {
+            else if(args.length == 2) {
                 if(args[0].equalsIgnoreCase("invite")
                         || args[0].equalsIgnoreCase("join")
                         || args[0].equalsIgnoreCase("setowner")
