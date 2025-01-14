@@ -29,14 +29,15 @@ public class BoxedTabCompleter implements TabCompleter {
             box = boxManager.getBoxByPlayer(player.getUniqueId());
         }
 
-        if (box == null){
+        //No box
+        else {
             return List.of("create", "join");
         }
 
         //Owner
         if (boxManager.isOwner(box, player)) {
             if(args.length == 1) {
-                return Stream.of("create", "delete", "invite", "join", "tp", "setowner", "kick", "team").sorted().collect(Collectors.toList());
+                return Stream.of("create", "delete", "invite", "join", "spawn", "setowner", "kick", "team", "setspawn").sorted().collect(Collectors.toList());
             }
             if(args.length == 2) {
                 if(args[0].equalsIgnoreCase("invite")
@@ -51,7 +52,7 @@ public class BoxedTabCompleter implements TabCompleter {
         //Member
         else{
             if(args.length == 1) {
-                return Stream.of("create", "tp", "leave", "team").sorted().collect(Collectors.toList());
+                return Stream.of("create", "spawn", "leave", "team").sorted().collect(Collectors.toList());
             }
 //            if(args.length == 2) {
 //                if(args[0].equalsIgnoreCase("invite")

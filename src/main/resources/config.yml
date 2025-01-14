@@ -10,7 +10,7 @@ tpDelay: 30
 #if every player needs to have the same seed / map, put it here, else put None
 baseSeed: "None"
 
-#Choose if you want to announce every advancement
+#Choose if you want to announce every advancement (true or false)
 showAllAdvancements: false
 
 #The time before the invitation expire (in second)

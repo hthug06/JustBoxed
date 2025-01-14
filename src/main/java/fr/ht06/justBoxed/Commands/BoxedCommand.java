@@ -364,9 +364,8 @@ public class BoxedCommand implements CommandExecutor {
 
             }
 
-
             //tp to the spawn of the box
-            else if (args[0].equalsIgnoreCase("tp")){
+            else if (args[0].equalsIgnoreCase("spawn")){
                 if (manager.hasBox(player.getUniqueId())){
                     Box box = manager.getBoxByPlayer(player.getUniqueId());
                     player.teleport(box.getSpawn());
@@ -374,6 +373,31 @@ public class BoxedCommand implements CommandExecutor {
                 else {
                     player.sendMessage("§cYou do not have a box");
                 }
+            }
+
+            else if (args[0].equalsIgnoreCase("setspawn")){
+                //Verification if the player has a box (maybe deprecated later)
+                if (!manager.hasBox(player.getUniqueId())){
+                    player.sendMessage("§cYou don't have a box");
+                    return true;
+                }
+
+                Box box = manager.getBoxByPlayer(player.getUniqueId());
+
+                if (!manager.isOwner(box, player)){
+                    player.sendMessage("§cYou are not the owner of this box, only the owner can do this command");
+                    return true;
+                }
+
+                //If the block under is Air
+                if (!Bukkit.getWorld(box.getWorldName()).getBlockAt(player.getLocation().clone().add(0, -1, 0)).isSolid()){
+                    player.sendMessage("§cThe spawn need to be on the ground to be changed!");
+                    return true;
+                }
+
+
+                box.setSpawn(player.getLocation());
+                player.sendMessage("§aYou have change the spawn of the box");
             }
 
             else{

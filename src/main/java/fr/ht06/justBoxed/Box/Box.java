@@ -6,6 +6,7 @@ import fr.ht06.justBoxed.Runnable.InviteRunnable;
 import fr.ht06.justBoxed.WorldBorderManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.advancement.Advancement;
@@ -79,6 +80,10 @@ public class Box {
 
     public Location getSpawn() {
         return spawn;
+    }
+
+    public void setSpawn(Location spawn) {
+        this.spawn = spawn;
     }
 
     public void addDoneAdvancement(@NotNull NamespacedKey advancement) {

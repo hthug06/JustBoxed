@@ -10,23 +10,46 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AdvancementManager {
 
     public static void grantAdvancement(Player player, NamespacedKey advancement){
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);});
+        if (JustBoxed.getInstance().getConfig().getBoolean("showAllAdvancements")) {
+            JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, true);});
+        }
+
+        else{
+            JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);});
+        }
+
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, false);});
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false);});
+
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "advancement grant " + player.getName() +" only " + advancement);
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, true);});
+
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, true);});
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, true);});
+
     }
 
     public static void revokeAdvancement(Player player, NamespacedKey advancement){
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, false);});
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false);});
+
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke " + player.getName() +" only " + advancement);
+
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, true);});
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, true);});
     }
 
     public static void revokeAllAdvancement(Player player){
-        Bukkit.getWorld(player.getWorld().getName()).setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false);
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, false);});
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false);});
+
         Bukkit.advancementIterator().forEachRemaining(advancement -> {
             if (player.getAdvancementProgress(advancement).isDone()) {
                 revokeAdvancement(player, advancement.getKey());
             }
         });
-        Bukkit.getWorld(player.getWorld().getName()).setGameRule(GameRule.SEND_COMMAND_FEEDBACK, true);
+
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, true);});
+        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, true);});
     }
 
     public static Integer getTotalAdvancement(Player player){

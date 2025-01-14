@@ -1,7 +1,6 @@
 package fr.ht06.justBoxed;
 
 
-import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.Commands.BoxedCommand;
 import fr.ht06.justBoxed.Events.PlayerListeners;
@@ -10,7 +9,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,10 +21,14 @@ public final class JustBoxed extends JavaPlugin {
         Metrics metrics = new Metrics(this, 24371);
 
         if (getConfig().getBoolean("showAllAdvancements")) {
-            Bukkit.getWorlds().forEach(world -> world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false));
+            Bukkit.getWorld("world").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, true);
+        }
+        else {
+            Bukkit.getWorld("world").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         }
 
         saveDefaultConfig();
+
         //Commands
         getCommand("boxed").setExecutor(new BoxedCommand());
         getCommand("boxreload").setExecutor(this);

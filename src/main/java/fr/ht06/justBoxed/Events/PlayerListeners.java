@@ -26,22 +26,6 @@ public class PlayerListeners implements Listener {
     public void onAdvancement(PlayerAdvancementDoneEvent event) {
         Player player = event.getPlayer();
 
-        //Need to put this when the world create (this is not optimized here)
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {
-            if(world.getGameRuleValue(GameRule.ANNOUNCE_ADVANCEMENTS).equals(true)) {
-                world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
-            }});
-
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {
-            if(world.getGameRuleValue(GameRule.SEND_COMMAND_FEEDBACK).equals(true)) {
-                world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, false);
-            }});
-
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {
-            if(world.getGameRuleValue(GameRule.SEND_COMMAND_FEEDBACK).equals(true)) {
-                world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false);
-            }});
-
         //if this is not a 'recipe advancement'
         if(!event.getAdvancement().getKey().getKey().contains("recipes")) {
 
@@ -58,8 +42,7 @@ public class PlayerListeners implements Listener {
 //                player.sendMessage(String.valueOf(event.getAdvancement().getKey()));
 //                player.sendMessage(event.getAdvancement().getKey().getKey());
 
-                //Send a message to the player
-
+                    //Send a message to the player
                     box.broadcastMessage(Component.text("Advancement complete: ").append(event.getAdvancement().displayName()));
                 }
             }
