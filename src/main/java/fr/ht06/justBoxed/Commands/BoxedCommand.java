@@ -400,6 +400,29 @@ public class BoxedCommand implements CommandExecutor {
                 player.sendMessage("§aYou have change the spawn of the box");
             }
 
+            else if(args[0].equalsIgnoreCase("visit")){
+
+                //if the args are not equal to 2
+                if (args.length != 2){
+                    player.sendMessage("§c/box visit <player>");
+                    return true;
+                }
+
+                OfflinePlayer playerToVisit = Bukkit.getOfflinePlayer(args[1]);
+
+                if (!manager.hasBox(playerToVisit.getUniqueId())){
+                    player.sendMessage("§cThis player doesn't have a box");
+                    return true;
+                }
+
+                Box box = manager.getBoxByPlayer(playerToVisit.getUniqueId());
+
+                player.teleport(box.getSpawn());
+                player.sendMessage("§aTeleportation to " + box.getName());
+                box.broadcastMessage(Component.text(player.getName()+ " is visiting your box"));
+
+            }
+
             else{
                 //To finish later with /box help
                 sender.sendMessage("§c this command does not exist");

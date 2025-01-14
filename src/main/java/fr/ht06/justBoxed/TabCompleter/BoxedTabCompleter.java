@@ -31,18 +31,21 @@ public class BoxedTabCompleter implements TabCompleter {
 
         //No box
         else {
-            return List.of("create", "join");
+            return List.of("create", "join", "visit");
         }
 
         //Owner
         if (boxManager.isOwner(box, player)) {
             if(args.length == 1) {
-                return Stream.of("create", "delete", "invite", "join", "spawn", "setowner", "kick", "team", "setspawn").sorted().collect(Collectors.toList());
+                return Stream.of("create", "delete", "invite", "join", "spawn", "setowner", "kick", "team", "setspawn", "visit")
+                        .sorted()
+                        .collect(Collectors.toList());
             }
             if(args.length == 2) {
                 if(args[0].equalsIgnoreCase("invite")
                         || args[0].equalsIgnoreCase("join")
                         || args[0].equalsIgnoreCase("setowner")
+                        || args[0].equalsIgnoreCase("visit")
                         || args[0].equalsIgnoreCase("kick")) {
                     return players;
                 }
@@ -52,14 +55,13 @@ public class BoxedTabCompleter implements TabCompleter {
         //Member
         else{
             if(args.length == 1) {
-                return Stream.of("create", "spawn", "leave", "team").sorted().collect(Collectors.toList());
+                return Stream.of("create", "spawn", "leave", "team", "visit").sorted().collect(Collectors.toList());
             }
-//            if(args.length == 2) {
-//                if(args[0].equalsIgnoreCase("invite")
-//                        || args[0].equalsIgnoreCase("join")){
-//                    return players;
-//                }
-//            }
+            if(args.length == 2) {
+                if(args[0].equalsIgnoreCase("visit")){
+                    return players;
+                }
+            }
         }
         return List.of();
     }
