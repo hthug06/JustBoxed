@@ -5,14 +5,18 @@ import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.JustBoxed;
 import net.kyori.adventure.text.Component;
 import org.bukkit.GameRule;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
+import org.bukkit.inventory.meta.components.FoodComponent;
 
 public class PlayerListeners implements Listener {
     BoxManager boxManager = JustBoxed.manager;
@@ -63,41 +67,32 @@ public class PlayerListeners implements Listener {
             return;
         }
 
+
+        if (event.getClickedBlock() == null || event.getClickedBlock().getType() == Material.AIR) {
+            return;
+        }
+
+        boolean isFood = player.getInventory().getItemInMainHand().getDataTypes().stream().anyMatch(data -> data.getKey().getKey().equals("food"));
+
+        //need to do something, you can only eat an item while looking at the ground, he can't eat
+
         //if the player didn't have a box, he can't interact
-        if(!boxManager.hasBox(player.getUniqueId()) ||
-                !boxManager.getBoxByPlayer(player.getUniqueId()).getWorldName().equals(player.getWorld().getName())) {
-            if (event.getItem().getType().isEdible()){
-                player.sendMessage("§cYou can't do that on other players box");
-                event.setCancelled(true);
-            }
+        if(!boxManager.hasBox(player.getUniqueId())) {
+            player.sendMessage("§cVous ne pouvez pas interagir avec des block qui ne sont pas dans votre box.");
+            event.setCancelled(true);
+            return;
+        }
+
+        Box box = boxManager.getBoxByPlayer(player.getUniqueId());
+
+        //if the player is not on his box, he can't interact
+        if (!player.getWorld().getName().equals(box.getWorldName())){
+            player.sendMessage("§cVous ne pouvez pas interagir avec des block qui ne sont pas dans votre box.");
+            event.setCancelled(true);
+            return;
         }
     }
 
-//    @EventHandler
-//    public void onBreak(BlockBreakEvent event) {
-//        Player player = event.getPlayer();
-//
-//        //We didn't care about the main world
-//        if (player.getWorld().getName().equals("world") || player.getWorld().getName().equals("world_nether") || player.getWorld().getName().equals("world_the_end")) {
-//            return;
-//        }
-//
-//        //if the player didn't have a box, he can't interact
-//        if(!boxManager.hasBox(player.getUniqueId())) {
-//            player.sendMessage("§cYou can't break block on other players box");
-//            event.setCancelled(true);
-//            return;
-//        }
-//
-//        Box box = boxManager.getBoxByPlayer(player.getUniqueId());
-//
-//        //if the player is not on his box, he can't interact
-//        if (!player.getWorld().getName().equals(box.getWorldName())){
-//            player.sendMessage("§cYou can't break block on other players box");
-//            event.setCancelled(true);
-//            return;
-//        }
-//    }
 
     @EventHandler
     public void onHit(EntityDamageEvent event) {
