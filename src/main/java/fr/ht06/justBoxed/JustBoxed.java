@@ -2,19 +2,29 @@ package fr.ht06.justBoxed;
 
 
 import fr.ht06.justBoxed.Box.BoxManager;
+import fr.ht06.justBoxed.Box.CreateBox;
 import fr.ht06.justBoxed.Commands.BoxedCommand;
 import fr.ht06.justBoxed.Events.PlayerListeners;
 import fr.ht06.justBoxed.TabCompleter.BoxedTabCompleter;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public final class JustBoxed extends JavaPlugin {
 
     public static BoxManager manager = new BoxManager();
+    public static List<UUID> creatingWorld = new ArrayList<>() {
+    };
 
     @Override
     public void onEnable() {
