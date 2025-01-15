@@ -56,6 +56,11 @@ public class CreateBox {
                             Bukkit.getWorld(worldName).getHighestBlockYAt(loc[0].getBlockX(), loc[0].getBlockZ() + 1),
                             loc[0].getBlockZ());
 
+                    if (Bukkit.getWorld(worldName).isChunkGenerated(finalLoc.getBlockX(), finalLoc.getBlockZ())){
+                        Bukkit.getWorld(worldName).setChunkForceLoaded(finalLoc.getBlockX(), finalLoc.getBlockZ(), true);
+                    };
+
+
                     Box box = new Box(player.getName()+"'s box", player.getUniqueId(), finalLoc, worldName);
                     JustBoxed.manager.add(box);
                     player.teleport(finalLoc);
@@ -114,6 +119,7 @@ public class CreateBox {
 
         //search the nearest log
         for (y = 60; y <= yMax; y++) {
+            System.out.println("y: "+ y);
             for (int x = startX; x <= xMax; x++) {
                 for (int z = startZ; z <= zMax; z++) {
 

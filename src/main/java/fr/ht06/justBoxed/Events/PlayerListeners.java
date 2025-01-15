@@ -4,8 +4,7 @@ import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.JustBoxed;
 import net.kyori.adventure.text.Component;
-import org.bukkit.GameRule;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,10 +12,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.PlayerAdvancementDoneEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemBreakEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.meta.components.FoodComponent;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.List;
+import java.util.UUID;
 
 public class PlayerListeners implements Listener {
     BoxManager boxManager = JustBoxed.manager;
@@ -29,6 +30,73 @@ public class PlayerListeners implements Listener {
 //       AdvancementManager.grantAdvancement(player, "justboxed:joinadvancement");
 //        AdvancementManager.revokeAllAdvancement(player);
 //    }
+
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+
+        //if the player didn't have a box, we can't load the world
+        if (!boxManager.hasBox(player.getUniqueId())) {
+            return;
+        }
+
+        Box box = boxManager.getBoxByPlayer(player.getUniqueId());
+
+//        new WorldCreator(box.getWorldName()).createWorld();
+
+    }
+
+    @EventHandler
+    public void onPlayerDisconnect(PlayerQuitEvent event) {
+
+        Player player = event.getPlayer();
+
+        if (!boxManager.hasBox(player.getUniqueId())) {
+            return;
+        }
+
+        Box box = boxManager.getBoxByPlayer(player.getUniqueId());
+
+        UUID owner = box.getOwner();
+        List<UUID> uuidList = box.getMembers();
+
+        //if the player who disconnects is the owner, we verify every member
+        if (player.getUniqueId().equals(owner)) {
+            for (UUID uuid : uuidList) {
+                if (box.isOnline(uuid)) {
+                    return;
+                }
+            }
+        }
+
+        //if the player who disconnects is a member, we check the owner and every other player
+        if (uuidList.contains(player.getUniqueId())) {
+            uuidList.remove(player.getUniqueId());
+            if (box.isOnline(box.getOwner())) {
+                return;
+            }
+            for (UUID uuid : uuidList) {
+                if (box.isOnline(uuid)) {
+                    return;
+                }
+            }
+        }
+
+        //Wait for the player to be fully disconnected
+//        new BukkitRunnable() {
+//            @Override
+//            public void run() {
+//                if(!player.isOnline()){
+//                    Bukkit.getWorld(box.getWorldName()).save();
+//                    Bukkit.unloadWorld(box.getWorldName(), false);
+//                    cancel();
+//                }
+//            }
+//        }.runTaskTimer(JustBoxed.getInstance(), 0,20);
+
+
+    }
 
     @EventHandler
     public void onAdvancement(PlayerAdvancementDoneEvent event) {
