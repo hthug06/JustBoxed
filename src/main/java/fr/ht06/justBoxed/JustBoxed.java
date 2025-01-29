@@ -4,6 +4,7 @@ package fr.ht06.justBoxed;
 import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.Box.LoadBoxData;
 import fr.ht06.justBoxed.Box.SaveBoxData;
+import fr.ht06.justBoxed.Box.UnloadInactiveBox;
 import fr.ht06.justBoxed.Commands.BoxedCommand;
 import fr.ht06.justBoxed.Events.PlayerListeners;
 import fr.ht06.justBoxed.TabCompleter.BoxedTabCompleter;
@@ -14,6 +15,7 @@ import org.bukkit.GameRule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.codehaus.plexus.util.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -62,6 +64,14 @@ public final class JustBoxed extends JavaPlugin {
         } catch (IOException e) {
             getComponentLogger().info(Component.text("Can't save the data, please make sure that the data file is correct", TextColor.color(0xC70039) ));
         }
+
+        //unload every inactive world every x second after 5 minutes
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                UnloadInactiveBox.unloadAll();
+            }
+        }.runTaskTimer(this, 300, JustBoxed.getInstance().getConfig().getInt("inactivityUnload")* 20L);
 
     }
 

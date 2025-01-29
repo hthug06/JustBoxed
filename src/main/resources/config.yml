@@ -16,5 +16,10 @@ memberLimit: 5
 #Define how many block the border is going to expand with every advancement
 borderExpand: 2
 
-#Define after how many second of inactivity a box world should be unloaded
+#Define after how many second the plugin check if a world is inactive and unload it
 inactivityUnload: 60
+
+#Box world's are unload every x second (see above), put here other worlds that need to be always loaded
+#world, world_nether and world_the_end are always loaded by default
+alwaysLoadedWorld:
+  - minage

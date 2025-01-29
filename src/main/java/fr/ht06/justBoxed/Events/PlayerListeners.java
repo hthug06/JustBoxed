@@ -3,6 +3,7 @@ package fr.ht06.justBoxed.Events;
 import fr.ht06.justBoxed.AdvancementManager;
 import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.Box.BoxManager;
+import fr.ht06.justBoxed.Box.UnloadInactiveBox;
 import fr.ht06.justBoxed.JustBoxed;
 import fr.ht06.justBoxed.WorldBorderManager;
 import net.kyori.adventure.text.Component;
@@ -105,25 +106,8 @@ public class PlayerListeners implements Listener {
             }
         }
 
-//      Wait x sec in case the player reconnects (defined in the config.yml)
-        long inactivityUnload = JustBoxed.getInstance().getConfig().getInt("inactivityUnload");
-        //lil security
-        if (inactivityUnload == 0){
-            inactivityUnload = 5;
-        }
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if(!player.isOnline()){
-                    JustBoxed.getInstance().getComponentLogger().info(Component.text("Unload " + box.getWorldName() + " for 60 seconds of inactivity", NamedTextColor.RED));
-                    Bukkit.getWorld(box.getWorldName()).save();
-                    Bukkit.unloadWorld(box.getWorldName(), true);
-                    cancel();
-                }
-            }
-        }.runTaskLater(JustBoxed.getInstance(), 20L *inactivityUnload);
-
-
+        //all test are ok, we unload the box
+        UnloadInactiveBox.unload(box);
     }
 
     @EventHandler
