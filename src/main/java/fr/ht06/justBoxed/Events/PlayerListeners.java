@@ -169,6 +169,11 @@ public class PlayerListeners implements Listener {
             return;
         }
 
+        //op player can do whatever they want
+        if (player.isOp()){
+            return;
+        }
+
 //        boolean isFood = player.getInventory().getItemInMainHand().getDataTypes().stream().anyMatch(data -> data.getKey().getKey().equals("food"));
 
         //need to do something, you can only eat an item while looking at the ground, he can't eat
@@ -201,6 +206,11 @@ public class PlayerListeners implements Listener {
         }
 
         Player player = (Player) event.getDamageSource().getCausingEntity();
+
+        //op player can do whatever they want
+        if (player.isOp()){
+            return;
+        }
 
         //We didn't care about the main world
         if (player.getWorld().getName().equals("world") || player.getWorld().getName().equals("world_nether") || player.getWorld().getName().equals("world_the_end")) {

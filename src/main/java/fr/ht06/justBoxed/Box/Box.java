@@ -5,6 +5,7 @@ import fr.ht06.justBoxed.JustBoxed;
 import fr.ht06.justBoxed.Runnable.InviteRunnable;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -106,11 +107,25 @@ public class Box {
 
     public void addDoneAdvancement(@NotNull NamespacedKey advancement) {
         completedAdvancements.add(advancement);
+
+        //Get the advancement
+        Advancement advancementReel = Bukkit.getAdvancement(advancement);
+
         //don't work if any player are offline
-        AdvancementManager.grantAdvancement(Bukkit.getPlayer(owner), advancement);
+        if (Bukkit.getOfflinePlayer(owner).isOnline()){
+
+            //don't give the advancement if he already has it
+            if (!Bukkit.getOfflinePlayer(owner).getPlayer().getAdvancementProgress(advancementReel).isDone()) {
+                AdvancementManager.grantAdvancement(Bukkit.getPlayer(owner), advancement);
+            }
+        }
+
         members.forEach(uuid -> {
             if (Bukkit.getOfflinePlayer(uuid).isOnline()) {
-                AdvancementManager.grantAdvancement(Bukkit.getPlayer(uuid), advancement);
+                //don't give the advancement if he already has it
+                if (!Bukkit.getPlayer(uuid).getAdvancementProgress(advancementReel).isDone()) {
+                    AdvancementManager.grantAdvancement(Bukkit.getPlayer(uuid), advancement);
+                }
             }
         });
     }

@@ -318,7 +318,7 @@ public class BoxedCommand implements CommandExecutor {
                 }
 
                 //Not in the box = error
-                if (futureOwner == null || !box.getMembers().contains(futureOwner.getUniqueId())){
+                if (!box.getMembers().contains(futureOwner.getUniqueId())){
                     player.sendMessage("§cThis player is not in your box");
                     return true;
                 }
@@ -368,7 +368,7 @@ public class BoxedCommand implements CommandExecutor {
                 }
 
                 //Check if the player is in the box
-                if (playerToKick == null || !box.getMembers().contains(playerToKick.getUniqueId())){
+                if (!box.getMembers().contains(playerToKick.getUniqueId())){
                     player.sendMessage("§cThis player is not in your box");
                     return true;
                 }
@@ -383,7 +383,7 @@ public class BoxedCommand implements CommandExecutor {
 
 
                 //Verification if the player exists, and send a message if he is online
-                if (playerToKick != null && playerToKick.isOnline()){
+                if (playerToKick.isOnline()){
                     Player playerToKickPlayer = playerToKick.getPlayer();
                     playerToKickPlayer.sendMessage("§6You have been kicked from " +box.getName()+"!");
                 }
@@ -535,10 +535,65 @@ public class BoxedCommand implements CommandExecutor {
 
                 Box box = manager.getBoxByPlayer(playerToVisit.getUniqueId());
 
-                player.teleport(box.getSpawn());
-                player.sendMessage("§aTeleportation to " + box.getName());
-                box.broadcastMessage(Component.text(player.getName()+ " is visiting your box"));
+                //if the world is null, load it (async for no lag)
+                if (Bukkit.getWorld(box.getWorldName()) == null){
 
+                    new BukkitRunnable() {
+
+                        Box box = manager.getBoxByPlayer(playerToVisit.getUniqueId());
+
+                        @Override
+                        public void run() {
+                            try {
+                                player.sendActionBar(Component.text("Loading the world...", NamedTextColor.GOLD));
+                                new WorldCreator(box.getWorldName()).createWorld();
+                            }catch (IllegalStateException ignored){}
+                            cancel();
+                        }
+                    }.runTaskAsynchronously(JustBoxed.getInstance());
+
+                    new BukkitRunnable() {
+
+                        Box box = manager.getBoxByPlayer(playerToVisit.getUniqueId());
+
+                        @Override
+                        public void run() {
+                            //wait for the world to be loaded to tp the player
+                            if (Bukkit.getWorld(box.getWorldName()) != null){
+                                Location loc = new Location(Bukkit.getWorld(box.getWorldName()),
+                                        box.getSpawn().getX(),
+                                        box.getSpawn().getY(),
+                                        box.getSpawn().getZ());
+
+                                //set the wb
+                                WorldBorderManager.setWorldBorder(box);
+
+                                //and finally tp the player
+                                player.teleport(loc);
+                                player.sendMessage("§aTeleportation to " + box.getName());
+                                box.broadcastMessage(Component.text(player.getName()+ " is visiting your box"));
+                                cancel();
+                            }
+                            else {
+                                player.sendActionBar(Component.text("Loading the world...", NamedTextColor.GOLD));
+                            }
+                        }
+                    }.runTaskTimer(JustBoxed.getInstance(), 20, 20);
+
+                }
+
+                //if the world is already loaded, set the wb and tp the player
+                else {
+                    box = manager.getBoxByPlayer(playerToVisit.getUniqueId());
+                    WorldBorderManager.setWorldBorder(box);
+                    Location loc = new Location(Bukkit.getWorld(box.getWorldName()),
+                            box.getSpawn().getX(),
+                            box.getSpawn().getY(),
+                            box.getSpawn().getZ());
+                    player.teleport(loc);
+                    player.sendMessage("§aTeleportation to " + box.getName());
+                    box.broadcastMessage(Component.text(player.getName()+ " is visiting your box"));
+                }
             }
 
             else{
@@ -551,25 +606,25 @@ public class BoxedCommand implements CommandExecutor {
     }
 
     public void deleteWorld(String worldName) {
-        //Récup le monde
+        //Get the world
         World w = Bukkit.getWorld(worldName);
 
-        //On téléporte le joueur dans le monde de base au 0 0
-        for (Player player : w.getPlayers()) {
-        player.teleport(new Location(Bukkit.getWorld("world"),
-                0,
-                Bukkit.getWorld("world").getHighestBlockYAt(0, 0)+1,
-                0));
+        //if the world is null, the world is already unloaded so we just delete the files
+        if (w != null){
+            //teleport everyone to another place (for nom 0 0 in world)
+            for (Player player : w.getPlayers()) {
+                player.teleport(new Location(Bukkit.getWorld("world"),
+                        0,
+                        Bukkit.getWorld("world").getHighestBlockYAt(0, 0)+1,
+                        0));
+            }
+
+            //Unload the world
+            Bukkit.getServer().unloadWorld(w, false);
         }
 
-        //On delete le fichier du monde
-        File folder = Bukkit.getWorld(w.getName()).getWorldFolder();
-
-        //Unload le monde
-        Bukkit.getServer().unloadWorld(w, false);
-
         try {
-            FileUtils.deleteDirectory(folder);
+            FileUtils.deleteDirectory(new File(JustBoxed.getInstance().getServer().getWorldContainer(), worldName));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
