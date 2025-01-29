@@ -1,5 +1,7 @@
 package fr.ht06.justBoxed.Box;
 
+import fr.ht06.justBoxed.AdvancementManager;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -14,6 +16,10 @@ public class BoxManager {
 
     public void add(Box box) {
         boxes.add(box);
+    }
+
+    public List<Box> getBoxes() {
+        return boxes;
     }
 
     public Box getBoxByName(String name) {
@@ -47,6 +53,15 @@ public class BoxManager {
     }
 
     public void removeBox(Box box) {
+
+        //For revoke all advancement
+        AdvancementManager.revokeAllAdvancement(Bukkit.getOfflinePlayer(box.getOwner()).getPlayer());
+        box.getMembers().forEach(member -> {
+            if (Bukkit.getOfflinePlayer(member).isOnline()){
+                AdvancementManager.revokeAllAdvancement(Bukkit.getOfflinePlayer(member).getPlayer());
+            }
+        });
+
         boxes.remove(box);
     }
 

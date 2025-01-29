@@ -3,13 +3,8 @@ package fr.ht06.justBoxed.Box;
 import fr.ht06.justBoxed.AdvancementManager;
 import fr.ht06.justBoxed.JustBoxed;
 import fr.ht06.justBoxed.Runnable.InviteRunnable;
-import fr.ht06.justBoxed.WorldBorderManager;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.GameRule;
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
-import org.bukkit.advancement.Advancement;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,18 +22,24 @@ public class Box {
     private List<NamespacedKey> completedAdvancements = new ArrayList<>();
     private List<InviteRunnable> invitedPlayers = new ArrayList<>();
 
-    public Box(String name, UUID owner, org.bukkit.Location spawn, String worldName) {
+    public Box(String name, UUID owner, org.bukkit.Location spawn, String worldName, boolean created) {
         this.name = name;
         this.owner = owner;
         this.spawn = spawn;
         this.worldName = worldName;
 
         Player player = Bukkit.getPlayer(owner);
-        WorldBorderManager.setWorldBorder(this);
+//        WorldBorderManager.setWorldBorder(this);
 
         //revoke all player's advancement cause this is the goal of this gamemode lol
         AdvancementManager.revokeAllAdvancement(player);
+    }
 
+    public Box(String name, UUID owner, org.bukkit.Location spawn, String worldName) {
+        this.name = name;
+        this.owner = owner;
+        this.spawn = spawn;
+        this.worldName = worldName;
     }
 
     public String getName() {
@@ -71,7 +72,7 @@ public class Box {
 
     public void setSize(int size) {
         this.size = size;
-        WorldBorderManager.setWorldBorder(this, 2);
+//        WorldBorderManager.setWorldBorder(this, 2);
     }
 
     public String getWorldName() {
@@ -79,11 +80,28 @@ public class Box {
     }
 
     public Location getSpawn() {
-        return spawn;
+        return new Location(Bukkit.getWorld(worldName), spawn.getX(), spawn.getY(), spawn.getZ());
+    }
+
+    public Location getSpawnForJoin(Player player) {
+        if (Bukkit.getWorld(worldName) == null) {
+            Bukkit.getScheduler().runTaskAsynchronously(JustBoxed.getInstance(), () -> {
+                player.sendMessage("Your world is loading, try to join it in a few seconds.");
+                try {
+                    new WorldCreator(worldName).createWorld();
+                }catch (IllegalStateException ignored) {}
+            });
+            return null;
+        }
+        return new Location(Bukkit.getWorld(worldName), spawn.getX(), spawn.getY(), spawn.getZ());
     }
 
     public void setSpawn(Location spawn) {
         this.spawn = spawn;
+    }
+
+    public void addDoneAdvancementOnStart(@NotNull NamespacedKey advancement) {
+        completedAdvancements.add(advancement);
     }
 
     public void addDoneAdvancement(@NotNull NamespacedKey advancement) {
@@ -91,7 +109,9 @@ public class Box {
         //don't work if any player are offline
         AdvancementManager.grantAdvancement(Bukkit.getPlayer(owner), advancement);
         members.forEach(uuid -> {
-            AdvancementManager.grantAdvancement(Bukkit.getPlayer(uuid), advancement);
+            if (Bukkit.getOfflinePlayer(uuid).isOnline()) {
+                AdvancementManager.grantAdvancement(Bukkit.getPlayer(uuid), advancement);
+            }
         });
     }
 

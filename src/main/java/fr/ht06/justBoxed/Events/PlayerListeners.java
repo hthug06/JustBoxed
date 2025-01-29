@@ -1,54 +1,75 @@
 package fr.ht06.justBoxed.Events;
 
+import fr.ht06.justBoxed.AdvancementManager;
 import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.JustBoxed;
+import fr.ht06.justBoxed.WorldBorderManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
-import org.bukkit.block.Block;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.inventory.meta.components.FoodComponent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class PlayerListeners implements Listener {
     BoxManager boxManager = JustBoxed.manager;
 
-
-    //revoke all player achievements (for test)
-//    @EventHandler
-//    public void onPlayerJoin(PlayerJoinEvent event) {
-//        Player player = event.getPlayer();
-//       AdvancementManager.grantAdvancement(player, "justboxed:joinadvancement");
-//        AdvancementManager.revokeAllAdvancement(player);
-//    }
-
-
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        //if the player didn't have a box, we can't load the world
         if (!boxManager.hasBox(player.getUniqueId())) {
+            AdvancementManager.revokeAllAdvancement(player);
             return;
         }
 
         Box box = boxManager.getBoxByPlayer(player.getUniqueId());
 
-//        new WorldCreator(box.getWorldName()).createWorld();
+        //add advancement if his teammate does some when the payer was offline
+        List<Advancement> doneOffline = new ArrayList<>();
+
+        //Check all advancement, if the player did not have it, award it
+        for (NamespacedKey namespacedKey: box.getCompletedAdvancements()){
+            if (!player.getAdvancementProgress(Bukkit.getAdvancement(namespacedKey)).isDone()) {
+                doneOffline.add(Bukkit.getAdvancement(namespacedKey));
+            }
+            AdvancementManager.grantAdvancement(player, namespacedKey);
+        }
+
+        if (doneOffline.isEmpty()) {
+            return;
+        }
+
+        //Wait else the message sends before the player joins
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+
+                TextComponent.Builder doneOfflineMessage = Component.text("While you were offline, members of your box did some advancement: ", TextColor.color(0x1E8449)).toBuilder();
+
+                doneOffline.forEach(advancement -> doneOfflineMessage.append(advancement.displayName().asComponent()).appendSpace());
+
+                //send what advancements were made while the player was offline
+                player.sendMessage(doneOfflineMessage);
+            }
+        }.runTaskLater(JustBoxed.getInstance(), 20L);
 
     }
 
+
     @EventHandler
-    public void onPlayerDisconnect(PlayerQuitEvent event) {
+    public void onPlayerQuit(PlayerQuitEvent event) {
 
         Player player = event.getPlayer();
 
@@ -59,7 +80,7 @@ public class PlayerListeners implements Listener {
         Box box = boxManager.getBoxByPlayer(player.getUniqueId());
 
         UUID owner = box.getOwner();
-        List<UUID> uuidList = box.getMembers();
+        List<UUID> uuidList = new ArrayList<>(box.getMembers());
 
         //if the player who disconnects is the owner, we verify every member
         if (player.getUniqueId().equals(owner)) {
@@ -83,17 +104,23 @@ public class PlayerListeners implements Listener {
             }
         }
 
-        //Wait for the player to be fully disconnected
-//        new BukkitRunnable() {
-//            @Override
-//            public void run() {
-//                if(!player.isOnline()){
-//                    Bukkit.getWorld(box.getWorldName()).save();
-//                    Bukkit.unloadWorld(box.getWorldName(), false);
-//                    cancel();
-//                }
-//            }
-//        }.runTaskTimer(JustBoxed.getInstance(), 0,20);
+//      Wait x sec in case the player reconnects (defined in the config.yml)
+        long inactivityUnload = JustBoxed.getInstance().getConfig().getInt("inactivityUnload");
+        //lil security
+        if (inactivityUnload == 0){
+            inactivityUnload = 5;
+        }
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if(!player.isOnline()){
+                    JustBoxed.getInstance().getComponentLogger().info(Component.text("Unload " + box.getWorldName() + " for 60 seconds of inactivity", NamedTextColor.RED));
+                    Bukkit.getWorld(box.getWorldName()).save();
+                    Bukkit.unloadWorld(box.getWorldName(), true);
+                    cancel();
+                }
+            }
+        }.runTaskLater(JustBoxed.getInstance(), 20L *inactivityUnload);
 
 
     }
@@ -102,25 +129,24 @@ public class PlayerListeners implements Listener {
     public void onAdvancement(PlayerAdvancementDoneEvent event) {
         Player player = event.getPlayer();
 
-        //if this is not a 'recipe advancement'
-        if(!event.getAdvancement().getKey().getKey().contains("recipes")) {
+        //if this is a 'recipe advancement', cancel cause this is not a reel advancement
+        if(event.getAdvancement().getKey().getKey().contains("recipes")) return;
 
-            //If the player have a box
-            if (boxManager.hasBox(player.getUniqueId())) {
+        //If the player have a box
+        if (boxManager.hasBox(player.getUniqueId())) {
 
-                //get the box and add the size to the worldBorder
-                Box box = boxManager.getBoxByPlayer(player.getUniqueId());
-                if (!box.getCompletedAdvancements().contains(event.getAdvancement().getKey())) {
-                    box.setSize(box.getSize() + JustBoxed.getInstance().getConfig().getInt("borderExpand"));
-                    box.addDoneAdvancement(event.getAdvancement().getKey());
+            //get the box and add the size to the worldBorder
+            Box box = boxManager.getBoxByPlayer(player.getUniqueId());
 
-//                player.sendMessage(String.valueOf(event.getAdvancement()));
-//                player.sendMessage(String.valueOf(event.getAdvancement().getKey()));
-//                player.sendMessage(event.getAdvancement().getKey().getKey());
+            if (!box.getCompletedAdvancements().contains(event.getAdvancement().getKey())) {
+                box.setSize(box.getSize() + JustBoxed.getInstance().getConfig().getInt("borderExpand"));
+                box.addDoneAdvancement(event.getAdvancement().getKey());
 
-                    //Send a message to the player
-                    box.broadcastMessage(Component.text("Advancement complete: ").append(event.getAdvancement().displayName()));
-                }
+                //redo the wb
+                WorldBorderManager.setWorldBorder(box, 2);
+
+                //Send a message every member of the box
+                box.broadcastMessage(Component.text("Advancement complete: ").append(event.getAdvancement().displayName()));
             }
         }
     }
@@ -135,12 +161,12 @@ public class PlayerListeners implements Listener {
             return;
         }
 
-
+        //to avoid error
         if (event.getClickedBlock() == null || event.getClickedBlock().getType() == Material.AIR) {
             return;
         }
 
-        boolean isFood = player.getInventory().getItemInMainHand().getDataTypes().stream().anyMatch(data -> data.getKey().getKey().equals("food"));
+//        boolean isFood = player.getInventory().getItemInMainHand().getDataTypes().stream().anyMatch(data -> data.getKey().getKey().equals("food"));
 
         //need to do something, you can only eat an item while looking at the ground, he can't eat
 
@@ -157,17 +183,16 @@ public class PlayerListeners implements Listener {
         if (!player.getWorld().getName().equals(box.getWorldName())){
             player.sendMessage("§cVous ne pouvez pas interagir avec des block qui ne sont pas dans votre box.");
             event.setCancelled(true);
-            return;
         }
     }
 
 
     @EventHandler
     public void onHit(EntityDamageEvent event) {
-        //event.getEntity()  -> l'entité tapé
-        //event.getDamageSource().getCausingEntity() ->  l'attaquant
+        //event.getEntity()  -> victim
+        //event.getDamageSource().getCausingEntity() ->  attacker
 
-        //if this isnot a player, we don't care
+        //if the attacker is not a player, we don't care
         if (!(event.getDamageSource().getCausingEntity() instanceof Player)){
             return;
         }
@@ -192,7 +217,6 @@ public class PlayerListeners implements Listener {
         if (!player.getWorld().getName().equals(box.getWorldName())){
             player.sendMessage("§cYou can't attack on other players box");
             event.setCancelled(true);
-            return;
         }
     }
 }

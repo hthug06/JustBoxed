@@ -3,11 +3,14 @@ package fr.ht06.justBoxed;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.NamespacedKey;
+import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.entity.Player;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AdvancementManager {
+
+    //it will evolve to later use bukkit API for everything and not minecraft command
 
     public static void grantAdvancement(Player player, NamespacedKey advancement){
         if (JustBoxed.getInstance().getConfig().getBoolean("showAllAdvancements")) {
@@ -39,17 +42,18 @@ public class AdvancementManager {
     }
 
     public static void revokeAllAdvancement(Player player){
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, false);});
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false);});
-
         Bukkit.advancementIterator().forEachRemaining(advancement -> {
-            if (player.getAdvancementProgress(advancement).isDone()) {
-                revokeAdvancement(player, advancement.getKey());
-            }
-        });
 
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, true);});
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, true);});
+            AdvancementProgress progress = player.getAdvancementProgress(advancement);
+
+            //if he has the advancement, revoke it
+            if (progress.isDone()){
+                for (String criteria : progress.getAwardedCriteria()){
+                    progress.revokeCriteria(criteria);
+                }
+            }
+
+        });
     }
 
     public static Integer getTotalAdvancement(Player player){
