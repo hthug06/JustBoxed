@@ -43,8 +43,9 @@ public class PlayerListeners implements Listener {
         for (NamespacedKey namespacedKey: box.getCompletedAdvancements()){
             if (!player.getAdvancementProgress(Bukkit.getAdvancement(namespacedKey)).isDone()) {
                 doneOffline.add(Bukkit.getAdvancement(namespacedKey));
+                AdvancementManager.grantAdvancement(player, namespacedKey);
             }
-            AdvancementManager.grantAdvancement(player, namespacedKey);
+
         }
 
         if (doneOffline.isEmpty()) {
@@ -143,7 +144,9 @@ public class PlayerListeners implements Listener {
                 box.addDoneAdvancement(event.getAdvancement().getKey());
 
                 //redo the wb
-                WorldBorderManager.setWorldBorder(box, 2);
+                if (Bukkit.getWorld(box.getWorldName()) != null) {
+                    WorldBorderManager.setWorldBorder(box, 2);
+                }
 
                 //Send a message every member of the box
                 box.broadcastMessage(Component.text("Advancement complete: ").append(event.getAdvancement().displayName()));
