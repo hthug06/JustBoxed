@@ -37,33 +37,39 @@ public class LoadBoxData {
         }
 
         //load box 1 by 1
-        for (String box : DataConfig.get().getConfigurationSection("Box").getKeys(false)) {
+        for (String boxUUID : DataConfig.get().getConfigurationSection("Box").getKeys(false)) {
 
-            //load everything related to the box
-            String name = DataConfig.get().getString("Box."+box+".name");
-            String ownerName = DataConfig.get().getString("Box."+box+".ownerUUID");
+            //load everything related to the boxUUID
+            String name = DataConfig.get().getString("Box."+ boxUUID +".name");
+            String ownerName = DataConfig.get().getString("Box."+ boxUUID +".ownerUUID");
 
-            int x = DataConfig.get().getInt("Box."+box+".x");
-            int y = DataConfig.get().getInt("Box."+box+".y");
-            int z = DataConfig.get().getInt("Box."+box+".z");
-            String worldName = DataConfig.get().getString("Box."+box+".worldName");
+            int x = DataConfig.get().getInt("Box."+ boxUUID +".x");
+            int y = DataConfig.get().getInt("Box."+ boxUUID +".y");
+            int z = DataConfig.get().getInt("Box."+ boxUUID +".z");
+            String worldName = DataConfig.get().getString("Box."+ boxUUID +".worldName");
             Location spawn = new Location(Bukkit.getWorld(worldName), x, y, z);
 
             //create the box base
             Box newBox = new Box(name, UUID.fromString(ownerName), spawn, worldName);
 
+            //if the plugin is in version 1.0, the save file uses box name instead of uuid, need tpo check this
+            try {
+                newBox.setUuid(UUID.fromString(boxUUID));
+            }catch (Exception ignored){}
+
+
             //then add the members
-           if (DataConfig.get().getList("Box."+box+".membersUUID") != null) {
-               DataConfig.get().getList("Box."+box+".membersUUID")
+           if (DataConfig.get().getList("Box."+ boxUUID +".membersUUID") != null) {
+               DataConfig.get().getList("Box."+ boxUUID +".membersUUID")
                        .forEach(member -> newBox.addMember(UUID.fromString((String) member)));
            }
 
            //and the box size
-           newBox.setSize(DataConfig.get().getInt("Box."+box+".boxSize"));
+           newBox.setSize(DataConfig.get().getInt("Box."+ boxUUID +".boxSize"));
 
 
            //And the advancement
-           DataConfig.get().getStringList("Box."+box+".Advancement")
+           DataConfig.get().getStringList("Box."+ boxUUID +".Advancement")
                    .forEach(nameSpacedKey ->{
                        String namespace = nameSpacedKey.split(":")[0];
                        String key = nameSpacedKey.split(":")[1];
@@ -71,8 +77,8 @@ public class LoadBoxData {
                        newBox.addDoneAdvancementOnStart(namespacedKey);
                    });
 
-           //and add it to the box manager
-           JustBoxed.manager.add(newBox);
+           //and add it to the boxUUID manager
+           JustBoxed.boxManager.add(newBox);
         }
         JustBoxed.getInstance().getComponentLogger().info(Component.text("Data loaded!", TextColor.color(0x48CA4A)));
     }

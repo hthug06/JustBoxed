@@ -3,7 +3,6 @@ package fr.ht06.justBoxed.TabCompleter;
 import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.JustBoxed;
-import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -18,7 +17,7 @@ import java.util.stream.Stream;
 public class BoxedTabCompleter implements TabCompleter {
 
     Box box;
-    BoxManager boxManager = JustBoxed.manager;
+    BoxManager boxManager = JustBoxed.boxManager;
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {

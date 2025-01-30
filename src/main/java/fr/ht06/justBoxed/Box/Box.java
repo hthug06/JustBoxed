@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class Box {
+    private UUID uuid;
     private String name;
     private UUID owner;
     private List<UUID> members = new ArrayList<>();
@@ -37,10 +38,27 @@ public class Box {
     }
 
     public Box(String name, UUID owner, org.bukkit.Location spawn, String worldName) {
+        //create a box uuid to save it in the data.yml
+        do {
+            this.uuid = UUID.randomUUID();
+        }while (JustBoxed.boxManager.UUIDTaken(uuid));
+
         this.name = name;
         this.owner = owner;
         this.spawn = spawn;
         this.worldName = worldName;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getName() {

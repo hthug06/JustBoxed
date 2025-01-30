@@ -4,6 +4,7 @@ main: fr.ht06.justBoxed.JustBoxed
 api-version: '1.21'
 description: A Boxed Block Plugin
 author: ht06
+prefix: JustBoxed
 commands:
   boxed:
     description: The main boxed command
@@ -17,3 +18,9 @@ commands:
     aliases:
       - bxrl
     usage: /boxedreload
+
+  aboxed:
+    description: Admin command for the boxed block plugin
+    aliases:
+      - abx
+      - abox

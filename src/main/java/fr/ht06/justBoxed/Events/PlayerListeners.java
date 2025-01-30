@@ -3,12 +3,10 @@ package fr.ht06.justBoxed.Events;
 import fr.ht06.justBoxed.AdvancementManager;
 import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.Box.BoxManager;
-import fr.ht06.justBoxed.Box.UnloadInactiveBox;
 import fr.ht06.justBoxed.JustBoxed;
 import fr.ht06.justBoxed.WorldBorderManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.*;
 import org.bukkit.advancement.Advancement;
@@ -21,10 +19,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class PlayerListeners implements Listener {
-    BoxManager boxManager = JustBoxed.manager;
+    BoxManager boxManager = JustBoxed.boxManager;
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
@@ -71,46 +68,6 @@ public class PlayerListeners implements Listener {
 
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-
-        Player player = event.getPlayer();
-
-        if (!boxManager.hasBox(player.getUniqueId())) {
-            return;
-        }
-
-        Box box = boxManager.getBoxByPlayer(player.getUniqueId());
-
-        UUID owner = box.getOwner();
-        List<UUID> uuidList = new ArrayList<>(box.getMembers());
-
-        //if the player who disconnects is the owner, we verify every member
-        if (player.getUniqueId().equals(owner)) {
-            for (UUID uuid : uuidList) {
-                if (box.isOnline(uuid)) {
-                    return;
-                }
-            }
-        }
-
-        //if the player who disconnects is a member, we check the owner and every other player
-        if (uuidList.contains(player.getUniqueId())) {
-            uuidList.remove(player.getUniqueId());
-            if (box.isOnline(box.getOwner())) {
-                return;
-            }
-            for (UUID uuid : uuidList) {
-                if (box.isOnline(uuid)) {
-                    return;
-                }
-            }
-        }
-
-        //all test are ok, we unload the box
-        UnloadInactiveBox.unload(box);
-    }
-
-    @EventHandler
     public void onAdvancement(PlayerAdvancementDoneEvent event) {
         Player player = event.getPlayer();
 
@@ -124,7 +81,7 @@ public class PlayerListeners implements Listener {
             Box box = boxManager.getBoxByPlayer(player.getUniqueId());
 
             if (!box.getCompletedAdvancements().contains(event.getAdvancement().getKey())) {
-                box.setSize(box.getSize() + JustBoxed.getInstance().getConfig().getInt("borderExpand"));
+                box.setSize(box.getSize() + (JustBoxed.getInstance().getConfig().getInt("borderExpand")*2));
                 box.addDoneAdvancement(event.getAdvancement().getKey());
 
                 //redo the wb

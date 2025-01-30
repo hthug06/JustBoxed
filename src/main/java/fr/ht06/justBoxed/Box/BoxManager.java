@@ -26,6 +26,10 @@ public class BoxManager {
         return boxes.stream().filter(box -> box.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
     }
 
+    public Box getBoxByWorldName(String worldname) {
+        return boxes.stream().filter(box -> box.getWorldName().equalsIgnoreCase(worldname)).findFirst().orElse(null);
+    }
+
     public Box getBoxByPlayer(UUID uuid) {
         for (Box box : boxes) {
             if (box.getOwner().equals(uuid) || box.getMembers().contains(uuid)) {
@@ -63,6 +67,15 @@ public class BoxManager {
         });
 
         boxes.remove(box);
+    }
+
+    public boolean UUIDTaken(UUID uuid) {
+        for (Box box : boxes) {
+            if(box.getUuid().equals(uuid)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

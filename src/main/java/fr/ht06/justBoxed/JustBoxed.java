@@ -4,10 +4,13 @@ package fr.ht06.justBoxed;
 import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.Box.LoadBoxData;
 import fr.ht06.justBoxed.Box.SaveBoxData;
-import fr.ht06.justBoxed.Box.UnloadInactiveBox;
+import fr.ht06.justBoxed.Commands.ABoxedCommand;
+import fr.ht06.justBoxed.Runnable.WorldRunnable;
 import fr.ht06.justBoxed.Commands.BoxedCommand;
 import fr.ht06.justBoxed.Events.PlayerListeners;
+import fr.ht06.justBoxed.TabCompleter.ABoxedTabCompleter;
 import fr.ht06.justBoxed.TabCompleter.BoxedTabCompleter;
+import fr.ht06.justBoxed.World.WorldManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
@@ -15,7 +18,6 @@ import org.bukkit.GameRule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.codehaus.plexus.util.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +29,8 @@ import java.util.UUID;
 
 public final class JustBoxed extends JavaPlugin {
 
-    public static BoxManager manager = new BoxManager();
+    public static BoxManager boxManager = new BoxManager();
+    public static WorldManager worldManager = new WorldManager();
     public static List<UUID> creatingWorld = new ArrayList<>();
 
     @Override
@@ -36,22 +39,21 @@ public final class JustBoxed extends JavaPlugin {
         Metrics metrics = new Metrics(this, 24371);
 
         //might change later on
-        if (getConfig().getBoolean("showAllAdvancements")) {
-            Bukkit.getWorld("world").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, true);
-        }
-        else {
-            Bukkit.getWorld("world").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
-        }
+        Bukkit.getWorld("world").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("showAllAdvancements"));
+        Bukkit.getWorld("world_nether").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("showAllAdvancements"));
+        Bukkit.getWorld("world_the_end").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("showAllAdvancements"));
 
         //config.yml
         saveDefaultConfig();
 
         //Commands
         getCommand("boxed").setExecutor(new BoxedCommand());
+        getCommand("aboxed").setExecutor(new ABoxedCommand());
         getCommand("boxreload").setExecutor(this);
 
         //TabCompleter
         getCommand("boxed").setTabCompleter(new BoxedTabCompleter());
+        getCommand("aboxed").setTabCompleter(new ABoxedTabCompleter());
 
         //Events
         getServer().getPluginManager().registerEvents(new PlayerListeners(), this);
@@ -65,13 +67,17 @@ public final class JustBoxed extends JavaPlugin {
             getComponentLogger().info(Component.text("Can't save the data, please make sure that the data file is correct", TextColor.color(0xC70039) ));
         }
 
-        //unload every inactive world every x second after 5 minutes
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                UnloadInactiveBox.unloadAll();
+        //get all the world we cannot /don't want to unload
+        List<String> untouchableWorld = new ArrayList<>(List.of("world", "world_nether", "world_the_end"));
+        untouchableWorld.addAll(JustBoxed.getInstance().getConfig().getStringList("alwaysLoadedWorld"));
+
+        //create a new worldRunnable for every already existing world (box)
+        Bukkit.getWorlds().forEach(world -> {
+            //if not untouchable and online -> worldRunnable
+            if (!untouchableWorld.contains(world.getName()) && world.getName().contains("_box")) {
+                JustBoxed.worldManager.add(new WorldRunnable(Bukkit.getWorld(world.getName())));
             }
-        }.runTaskTimer(this, 300, JustBoxed.getInstance().getConfig().getInt("inactivityUnload")* 20L);
+        });
 
     }
 

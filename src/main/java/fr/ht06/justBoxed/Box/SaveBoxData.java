@@ -39,12 +39,12 @@ public class SaveBoxData {
         }
 
         //Now save box y box
-        for (Box box : JustBoxed.manager.getBoxes()){
+        for (Box box : JustBoxed.boxManager.getBoxes()){
             //create a section for the box (actually, this is the name, but maybe I gave them a UUID later
-            section.createSection(box.getName());
+            section.createSection(box.getUuid().toString());
 
             //get the box section
-            ConfigurationSection boxSection = DataConfig.get().getConfigurationSection("Box." + box.getName());
+            ConfigurationSection boxSection = DataConfig.get().getConfigurationSection("Box." + box.getUuid().toString());
 
             //save almost everything (don't save the invitation)
             if (boxSection == null) {

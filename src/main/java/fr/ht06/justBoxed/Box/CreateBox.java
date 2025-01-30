@@ -1,6 +1,7 @@
 package fr.ht06.justBoxed.Box;
 
 import fr.ht06.justBoxed.JustBoxed;
+import fr.ht06.justBoxed.Runnable.WorldRunnable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -12,7 +13,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BiomeSearchResult;
 
 import java.util.List;
-import java.util.Random;
 
 public class CreateBox {
 
@@ -135,8 +135,8 @@ public class CreateBox {
                             locTree.getBlockZ());
 
                     //creating the box
-                    Box box = new Box(player.getName() + " box", player.getUniqueId(), finalLoc, worldName, true);
-                    JustBoxed.manager.add(box);
+                    Box box = new Box(player.getName() + " box", player.getUniqueId(), finalLoc, worldName);
+                    JustBoxed.boxManager.add(box);
                     JustBoxed.creatingWorld.remove(player.getUniqueId());
 
                     //notify the player
@@ -146,6 +146,9 @@ public class CreateBox {
                             .append(Component.text("(or click here)", NamedTextColor.GRAY)
                                     .clickEvent(ClickEvent.runCommand("/box spawn"))
                                     .hoverEvent(HoverEvent.showText(Component.text("Click here to teleport to your box", NamedTextColor.GRAY)))));
+
+                    //add a world runnable
+                    JustBoxed.worldManager.add(new WorldRunnable(Bukkit.getWorld(worldName)));
 
                     //Stop the runnable because everything is ok now
                     cancel();
