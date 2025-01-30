@@ -4,6 +4,7 @@ import fr.ht06.justBoxed.Config.DataConfig;
 import fr.ht06.justBoxed.JustBoxed;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -14,7 +15,6 @@ import java.util.UUID;
 public class LoadBoxData {
 
     //I think I'll try to implement SQL one day... 😅
-
     public static void load(){
 
         //if there is no file, there is no data
@@ -40,7 +40,6 @@ public class LoadBoxData {
         for (String boxUUID : DataConfig.get().getConfigurationSection("Box").getKeys(false)) {
 
             //load everything related to the boxUUID
-            String name = DataConfig.get().getString("Box."+ boxUUID +".name");
             String ownerName = DataConfig.get().getString("Box."+ boxUUID +".ownerUUID");
 
             int x = DataConfig.get().getInt("Box."+ boxUUID +".x");
@@ -50,7 +49,19 @@ public class LoadBoxData {
             Location spawn = new Location(Bukkit.getWorld(worldName), x, y, z);
 
             //create the box base
-            Box newBox = new Box(name, UUID.fromString(ownerName), spawn, worldName);
+            Box newBox;
+            //Need to check because before 1.0.3, the name of the box was a String, and after this is a Component
+            if(DataConfig.get().isString("Box."+ boxUUID +".name")){
+                String name = DataConfig.get().getString("Box."+ boxUUID +".name");
+                Component nameComponent = MiniMessage.miniMessage().deserialize(name);
+                newBox = new Box(nameComponent, UUID.fromString(ownerName), spawn, worldName);
+
+            }
+            else {
+                Component name = DataConfig.get().getRichMessage("Box."+ boxUUID +".name");
+                newBox = new Box(name, UUID.fromString(ownerName), spawn, worldName);
+            }
+
 
             //if the plugin is in version 1.0, the save file uses box name instead of uuid, need tpo check this
             try {

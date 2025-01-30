@@ -54,7 +54,8 @@ public class SaveBoxData {
                 return;
             }
 
-            boxSection.set("name", box.getName());
+            //change in 1.0.3
+            boxSection.setRichMessage("name", box.getName());
             boxSection.set("ownerUUID", box.getOwner().toString());
 
             if (!box.getMembers().isEmpty()) {

@@ -17,10 +17,12 @@ public class WorldManager {
     }
 
     public void remove(WorldRunnable worldRunnable) {
+        worldRunnable.cancel();
         worldsRunnables.remove(worldRunnable);
     }
 
     public WorldRunnable get(World world) {
+        if(world == null) return null;
         for (WorldRunnable worldRunnable : worldsRunnables) {
             if (worldRunnable.getWorld().equals(world)) {
                 return worldRunnable;

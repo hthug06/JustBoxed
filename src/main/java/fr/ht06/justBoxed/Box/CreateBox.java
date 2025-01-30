@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ import java.util.List;
 public class CreateBox {
 
     //Create the world -> search a good biome (biome with wood) -> search a log -> create the box
+    MiniMessage miniMessage = MiniMessage.miniMessage();
 
     boolean finished = true;
     boolean needBiome = true;
@@ -135,7 +137,7 @@ public class CreateBox {
                             locTree.getBlockZ());
 
                     //creating the box
-                    Box box = new Box(player.getName() + " box", player.getUniqueId(), finalLoc, worldName);
+                    Box box = new Box(miniMessage.deserialize(player.getName() + " box"), player.getUniqueId(), finalLoc, worldName);
                     JustBoxed.boxManager.add(box);
                     JustBoxed.creatingWorld.remove(player.getUniqueId());
 

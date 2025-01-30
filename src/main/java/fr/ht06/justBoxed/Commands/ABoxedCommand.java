@@ -1,5 +1,6 @@
 package fr.ht06.justBoxed.Commands;
 
+import fr.ht06.justBoxed.Inventory.MainInventory;
 import fr.ht06.justBoxed.JustBoxed;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,8 +18,9 @@ public class ABoxedCommand implements CommandExecutor {
 
         Player player = (Player) sender;
 
+
         if (args.length == 0) {
-            player.sendMessage("§cUsage: /aboxed <args>");
+            player.openInventory(new MainInventory().getInventory());
             return true;
         }
         else{
@@ -27,9 +29,8 @@ public class ABoxedCommand implements CommandExecutor {
                     player.sendMessage("Empty");
                     return true;
                 }
-                JustBoxed.worldManager.getWorldsRunnables().forEach(worldRunnable -> {
-                    player.sendMessage(worldRunnable.getWorld().getName()+ ": " + worldRunnable.getActiveTime()+ "s");
-                });
+                JustBoxed.worldManager.getWorldsRunnables()
+                        .forEach(worldRunnable -> player.sendMessage(worldRunnable.getWorld().getName()+ ": " + worldRunnable.getActiveTime()+ "s"));
             }
         }
         return true;

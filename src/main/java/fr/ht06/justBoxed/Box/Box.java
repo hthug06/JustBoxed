@@ -4,6 +4,7 @@ import fr.ht06.justBoxed.AdvancementManager;
 import fr.ht06.justBoxed.JustBoxed;
 import fr.ht06.justBoxed.Runnable.InviteRunnable;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 public class Box {
     private UUID uuid;
-    private String name;
+    private Component name;
     private UUID owner;
     private List<UUID> members = new ArrayList<>();
     private org.bukkit.Location spawn;
@@ -24,20 +25,7 @@ public class Box {
     private List<NamespacedKey> completedAdvancements = new ArrayList<>();
     private List<InviteRunnable> invitedPlayers = new ArrayList<>();
 
-    public Box(String name, UUID owner, org.bukkit.Location spawn, String worldName, boolean created) {
-        this.name = name;
-        this.owner = owner;
-        this.spawn = spawn;
-        this.worldName = worldName;
-
-        Player player = Bukkit.getPlayer(owner);
-//        WorldBorderManager.setWorldBorder(this);
-
-        //revoke all player's advancement cause this is the goal of this gamemode lol
-        AdvancementManager.revokeAllAdvancement(player);
-    }
-
-    public Box(String name, UUID owner, org.bukkit.Location spawn, String worldName) {
+    public Box(Component name, UUID owner, org.bukkit.Location spawn, String worldName) {
         //create a box uuid to save it in the data.yml
         do {
             this.uuid = UUID.randomUUID();
@@ -57,11 +45,11 @@ public class Box {
         this.uuid = uuid;
     }
 
-    public void setName(String name) {
+    public void setName(Component name) {
         this.name = name;
     }
 
-    public String getName() {
+    public Component getName() {
         return name;
     }
 

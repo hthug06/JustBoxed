@@ -6,6 +6,7 @@ import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.Box.CreateBox;
 import fr.ht06.justBoxed.JustBoxed;
 import fr.ht06.justBoxed.Runnable.InviteRunnable;
+import fr.ht06.justBoxed.Runnable.WorldRunnable;
 import fr.ht06.justBoxed.World.LoadWorld;
 import fr.ht06.justBoxed.WorldBorderManager;
 import net.kyori.adventure.text.Component;
@@ -555,6 +556,9 @@ public class BoxedCommand implements CommandExecutor {
         //Get the world
         World w = Bukkit.getWorld(worldName);
 
+        WorldRunnable runnable = JustBoxed.worldManager.get(w);
+        JustBoxed.worldManager.remove(runnable);
+
         //if the world is null, the world is already unloaded so we just delete the files
         if (w != null){
             //teleport everyone to another place (for nom 0 0 in world)
@@ -574,94 +578,6 @@ public class BoxedCommand implements CommandExecutor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public void loadWorld(Player player) {
-        //if the world is null, load it (async for no lag)
-        new BukkitRunnable() {
-
-            Box box = manager.getBoxByPlayer(player.getUniqueId());
-
-            @Override
-            public void run() {
-                try {
-                    player.sendActionBar(Component.text("Loading the world...", NamedTextColor.GOLD));
-                    new WorldCreator(box.getWorldName()).createWorld();
-                }catch (IllegalStateException ignored){}
-                cancel();
-            }
-        }.runTaskAsynchronously(JustBoxed.getInstance());
-
-        new BukkitRunnable() {
-
-            Box box = manager.getBoxByPlayer(player.getUniqueId());
-
-            @Override
-            public void run() {
-                //wait for the world to be loaded to tp the player
-                if (Bukkit.getWorld(box.getWorldName()) != null){
-                    Location loc = box.getSpawn();
-
-                    //set the wb
-                    WorldBorderManager.setWorldBorder(box);
-
-                    //and finally tp the player
-                    player.teleport(loc);
-                    player.sendMessage("§aTeleportation to your box");
-                    cancel();
-                }
-                else {
-                    player.sendActionBar(Component.text("Loading the world...", NamedTextColor.GOLD));
-                }
-            }
-        }.runTaskTimer(JustBoxed.getInstance(), 20, 20);
-
-    }
-
-    public void loadWorldForVisit(Player player, OfflinePlayer playerToVisit) {
-        //if the world is null, load it (async for no lag)
-        new BukkitRunnable() {
-
-            Box box = manager.getBoxByPlayer(playerToVisit.getUniqueId());
-
-            @Override
-            public void run() {
-                try {
-                    player.sendActionBar(Component.text("Loading the world...", NamedTextColor.GOLD));
-                    new WorldCreator(box.getWorldName()).createWorld();
-                }catch (IllegalStateException ignored){}
-                cancel();
-            }
-        }.runTaskAsynchronously(JustBoxed.getInstance());
-
-        new BukkitRunnable() {
-
-            Box box = manager.getBoxByPlayer(playerToVisit.getUniqueId());
-
-            @Override
-            public void run() {
-                //wait for the world to be loaded to tp the player
-                if (Bukkit.getWorld(box.getWorldName()) != null){
-                    Location loc = new Location(Bukkit.getWorld(box.getWorldName()),
-                            box.getSpawn().getX(),
-                            box.getSpawn().getY(),
-                            box.getSpawn().getZ());
-
-                    //set the wb
-                    WorldBorderManager.setWorldBorder(box);
-
-                    //and finally tp the player
-                    player.teleport(loc);
-                    player.sendMessage("§aTeleportation to " + box.getName());
-                    box.broadcastMessage(Component.text(player.getName()+ " is visiting your box"));
-                    cancel();
-                }
-                else {
-                    player.sendActionBar(Component.text("Loading the world...", NamedTextColor.GOLD));
-                }
-            }
-        }.runTaskTimer(JustBoxed.getInstance(), 20, 20);
-
     }
 }
 

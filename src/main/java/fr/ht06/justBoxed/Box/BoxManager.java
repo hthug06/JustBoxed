@@ -1,6 +1,7 @@
 package fr.ht06.justBoxed.Box;
 
 import fr.ht06.justBoxed.AdvancementManager;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -22,8 +23,8 @@ public class BoxManager {
         return boxes;
     }
 
-    public Box getBoxByName(String name) {
-        return boxes.stream().filter(box -> box.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+    public Box getBoxByName(Component name) {
+        return boxes.stream().filter(box -> box.getName().equals(name)).findFirst().orElse(null);
     }
 
     public Box getBoxByWorldName(String worldname) {
@@ -37,6 +38,10 @@ public class BoxManager {
             }
         }
         return null;
+    }
+
+    public Box getBoxByUUID(UUID uuid) {
+        return boxes.stream().filter(box -> box.getUuid().equals(uuid)).findFirst().orElse(null);
     }
 
     public boolean hasBox(UUID uuid) {
