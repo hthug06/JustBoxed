@@ -23,7 +23,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -77,7 +76,6 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
             Component name = itemGrass.lore().getLast();
             String uuidStr = PlainTextComponentSerializer.plainText().serialize(name).replace("Box UUID: ", "");
             Box box = JustBoxed.boxManager.getBoxByUUID(UUID.fromString(uuidStr));
-            JustBoxed.getInstance().getComponentLogger().info(box.getName());
 
             if (event.getCurrentItem().getType() == null) return;
 

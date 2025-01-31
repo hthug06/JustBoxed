@@ -5,7 +5,8 @@ size: 10
 baseSeed: "None"
 
 #Choose if you want to announce every advancement (true or false)
-showAllAdvancements: false
+#need a restart or to reload the world
+announceAdvancements: false
 
 #The time before the invitation expire (in second)
 inviteTime: 60

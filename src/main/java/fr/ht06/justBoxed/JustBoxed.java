@@ -41,13 +41,13 @@ public final class JustBoxed extends JavaPlugin {
         //bstats
         Metrics metrics = new Metrics(this, 24371);
 
-        //might change later on
-        Bukkit.getWorld("world").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("showAllAdvancements"));
-        Bukkit.getWorld("world_nether").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("showAllAdvancements"));
-        Bukkit.getWorld("world_the_end").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("showAllAdvancements"));
-
         //config.yml
         saveDefaultConfig();
+
+        //might change later on
+        Bukkit.getWorld("world").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("announceAdvancements"));
+        Bukkit.getWorld("world_nether").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("announceAdvancements"));
+        Bukkit.getWorld("world_the_end").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("announceAdvancements"));
 
         //Commands
         getCommand("boxed").setExecutor(new BoxedCommand());

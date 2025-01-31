@@ -1,8 +1,8 @@
 package fr.ht06.justBoxed;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameRule;
 import org.bukkit.NamespacedKey;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.entity.Player;
 
@@ -10,35 +10,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AdvancementManager {
 
-    //it will evolve to later use bukkit API for everything and not minecraft command
-
     public static void grantAdvancement(Player player, NamespacedKey advancement){
-        if (JustBoxed.getInstance().getConfig().getBoolean("showAllAdvancements")) {
-            JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, true);});
+        Advancement adv = Bukkit.getAdvancement(advancement);
+        for(String criteria: player.getAdvancementProgress(adv).getRemainingCriteria()){
+            if (!player.getAdvancementProgress(adv).isDone()){
+                player.getAdvancementProgress(adv).awardCriteria(criteria);
+            }
         }
-
-        else{
-            JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);});
-        }
-
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, false);});
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false);});
-
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "advancement grant " + player.getName() +" only " + advancement);
-
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, true);});
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, true);});
-
     }
 
     public static void revokeAdvancement(Player player, NamespacedKey advancement){
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, false);});
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, false);});
-
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke " + player.getName() +" only " + advancement);
-
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, true);});
-        JustBoxed.getInstance().getServer().getWorlds().forEach(world -> {world.setGameRule(GameRule.SEND_COMMAND_FEEDBACK, true);});
+        Advancement adv = Bukkit.getAdvancement(advancement);
+        if (player.getAdvancementProgress(adv).isDone()){
+            adv.getCriteria().forEach(s -> player.getAdvancementProgress(adv).revokeCriteria(s));
+        }
     }
 
     public static void revokeAllAdvancement(Player player){

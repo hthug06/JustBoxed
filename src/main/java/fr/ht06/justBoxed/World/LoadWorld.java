@@ -4,6 +4,7 @@ import fr.ht06.justBoxed.JustBoxed;
 import fr.ht06.justBoxed.Runnable.WorldRunnable;
 import fr.ht06.justBoxed.WorldBorderManager;
 import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
 import org.bukkit.WorldCreator;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -29,7 +30,7 @@ public class LoadWorld {
             public void run() {
                 //wait for the world to be loaded to tp the player
                 if (Bukkit.getWorld(worldName) != null){
-
+                    Bukkit.getWorld(worldName).setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, JustBoxed.getInstance().getConfig().getBoolean("announceAdvancements"));
                     JustBoxed.worldManager.add(new WorldRunnable(Bukkit.getWorld(worldName)));
 
                     //set the wb

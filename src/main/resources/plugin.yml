@@ -24,3 +24,4 @@ commands:
     aliases:
       - abx
       - abox
+    permission: justBoxed.admin

@@ -114,7 +114,6 @@ public class AllBoxInfoInventory implements InventoryHolder, Listener {
             String boxUUID = PlainTextComponentSerializer.plainText().serialize(boxComp);
             UUID uuid = UUID.fromString(boxUUID);
             Box box = JustBoxed.boxManager.getBoxByUUID(uuid);
-//            JustBoxed.getInstance().getComponentLogger().info(box.getName());
             event.getWhoClicked().openInventory(new BoxInfoInventory(box).getInventory());
         }
     }
