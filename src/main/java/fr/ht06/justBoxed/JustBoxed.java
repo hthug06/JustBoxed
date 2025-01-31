@@ -55,8 +55,8 @@ public final class JustBoxed extends JavaPlugin {
         getCommand("boxreload").setExecutor(this);
 
         //TabCompleter
-        getCommand("boxed").setTabCompleter(new BoxedTabCompleter());
-        getCommand("aboxed").setTabCompleter(new ABoxedTabCompleter());
+        getCommand("box").setTabCompleter(new BoxedTabCompleter());
+        getCommand("abox").setTabCompleter(new ABoxedTabCompleter());
 
         //Events
         getServer().getPluginManager().registerEvents(new PlayerListeners(), this);
