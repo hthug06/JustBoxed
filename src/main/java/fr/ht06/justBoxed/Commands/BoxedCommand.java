@@ -15,6 +15,10 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -29,6 +33,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 
 public class BoxedCommand implements CommandExecutor {
 
@@ -386,7 +391,9 @@ public class BoxedCommand implements CommandExecutor {
                 //Verification if the player exists, and send a message if he is online
                 if (playerToKick.isOnline()){
                     Player playerToKickPlayer = playerToKick.getPlayer();
-                    playerToKickPlayer.sendMessage("§6You have been kicked from " +box.getName()+"!");
+                    playerToKickPlayer.sendMessage(Component.text("§6You have been kicked from ")
+                            .append(box.getName())
+                            .append(Component.text("§6...")));
                 }
 
             }
@@ -400,7 +407,9 @@ public class BoxedCommand implements CommandExecutor {
 
                 //get the boxx
                 Box box = manager.getBoxByPlayer(player.getUniqueId());
-                player.sendMessage(Component.text("--- " + box.getName() + " ---"));
+                player.sendMessage(Component.text("--- ")
+                        .append(box.getName())
+                        .append(Component.text(" ---")));
 
                 //owner line
                 if (box.isOnline(box.getOwner())){
@@ -491,6 +500,60 @@ public class BoxedCommand implements CommandExecutor {
                 player.sendMessage("§aYou have change the spawn of the box");
             }
 
+            else if (args[0].equalsIgnoreCase("setName")) {
+
+                //Verification if the player has a box (might be deprecated later)
+                if (!manager.hasBox(player.getUniqueId())){
+                    player.sendMessage("§cYou don't have a box");
+                    return true;
+                }
+
+                Box box = manager.getBoxByPlayer(player.getUniqueId());
+
+                //only the owner can change
+                if (!manager.isOwner(box, player)){
+                    player.sendMessage("§cYou are not the owner of this box, only the owner can do this command");
+                    return true;
+                }
+
+                if (args.length < 2){
+                    player.sendMessage("§c/box setname <name> (you can use this: https://webui.advntr.dev/)");
+                    return true;
+                }
+
+                StringBuilder builder = new StringBuilder();
+                for (int i = 1; i < args.length; i++){
+                    builder.append(args[i]);
+                    builder.append(" ");
+                }
+                builder.deleteCharAt(builder.length() - 1);
+
+
+                Component name = getCustomMM().deserialize(builder.toString());
+                String tempStr = PlainTextComponentSerializer.plainText().serialize(name);
+
+                //if he only put minimessage tags, the name is just empty
+                if (tempStr.isEmpty()){
+                    player.sendMessage("§cThe name of the box cannot be null");
+                    return true;
+                }
+                //18 because ∞ with <bold> 19 time go out of menu
+                if (tempStr.length() > 18){
+                    player.sendMessage("§cThe name of the box is too long");
+                    return true;
+                }
+
+                //check if the plain name if already taken , if yes cancel
+                if (!JustBoxed.boxManager.nameTaken(name)){
+                    box.setName(name);
+
+                    box.broadcastMessage(Component.text("§aThe new name of the box is: ").append(box.getName()));
+                }
+                else {
+                    player.sendMessage("§cThis name is already taken by another box");
+                }
+            }
+
             else if(args[0].equalsIgnoreCase("visit")){
 
                 //if the args are not equal to 2
@@ -578,6 +641,27 @@ public class BoxedCommand implements CommandExecutor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public MiniMessage getCustomMM(){
+        MiniMessage minimessage = MiniMessage.builder()
+                .tags(TagResolver.builder()
+                        .resolver(StandardTags.color())
+                        .resolver(StandardTags.font())   //remove if bug in inventory with the name
+                        .resolver(StandardTags.decorations())
+                        .resolver(StandardTags.gradient())
+                        .resolver(StandardTags.hoverEvent())
+                        .resolver(StandardTags.pride())
+                        .resolver(StandardTags.rainbow())
+                        .resolver(StandardTags.reset())
+                        .resolver(StandardTags.shadowColor())
+                        .resolver(StandardTags.translatable())
+                        .resolver(StandardTags.translatableFallback())
+                        .build()
+                )
+                .build();
+
+        return minimessage;
     }
 }
 

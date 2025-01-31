@@ -50,8 +50,8 @@ public final class JustBoxed extends JavaPlugin {
         Bukkit.getWorld("world_the_end").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("announceAdvancements"));
 
         //Commands
-        getCommand("boxed").setExecutor(new BoxedCommand());
-        getCommand("aboxed").setExecutor(new ABoxedCommand());
+        getCommand("box").setExecutor(new BoxedCommand());
+        getCommand("abox").setExecutor(new ABoxedCommand());
         getCommand("boxreload").setExecutor(this);
 
         //TabCompleter

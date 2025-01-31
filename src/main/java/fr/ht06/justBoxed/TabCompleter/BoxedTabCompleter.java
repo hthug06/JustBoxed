@@ -48,7 +48,7 @@ public class BoxedTabCompleter implements TabCompleter {
         //Owner
         if (boxManager.isOwner(box, player)) {
             if(args.length == 1) {
-                return Stream.of("delete", "invite", "join", "spawn", "setowner", "kick", "team", "setspawn", "visit")
+                return Stream.of("delete", "invite", "join", "spawn", "setowner", "kick", "team", "setname", "setspawn", "visit")
                         .sorted()
                         .collect(Collectors.toList());
             }

@@ -6,12 +6,11 @@ description: A Boxed Block Plugin
 author: ht06
 prefix: JustBoxed
 commands:
-  boxed:
+  box:
     description: The main boxed command
     aliases:
       - bx
-      - box
-    usage: /boxed §b[args]
+    usage: /box §b[args]
 
   boxReload:
     description: Reload the boxed plugin
@@ -19,9 +18,8 @@ commands:
       - bxrl
     usage: /boxedreload
 
-  aboxed:
+  abox:
     description: Admin command for the boxed block plugin
     aliases:
       - abx
-      - abox
     permission: justBoxed.admin

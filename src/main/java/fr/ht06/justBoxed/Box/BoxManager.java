@@ -2,6 +2,7 @@ package fr.ht06.justBoxed.Box;
 
 import fr.ht06.justBoxed.AdvancementManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -72,6 +73,16 @@ public class BoxManager {
         });
 
         boxes.remove(box);
+    }
+
+    public boolean nameTaken(Component name){
+        String namestr = PlainTextComponentSerializer.plainText().serialize(name);
+        for (Box box: boxes){
+            if (PlainTextComponentSerializer.plainText().serialize(box.getName()).equalsIgnoreCase(namestr)){
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean UUIDTaken(UUID uuid) {
