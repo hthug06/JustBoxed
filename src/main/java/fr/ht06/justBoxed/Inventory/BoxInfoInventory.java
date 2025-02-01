@@ -3,7 +3,9 @@ package fr.ht06.justBoxed.Inventory;
 import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.JustBoxed;
 import fr.ht06.justBoxed.Runnable.WorldRunnable;
+import fr.ht06.justBoxed.Utils.CreateItem;
 import fr.ht06.justBoxed.World.LoadWorld;
+import fr.ht06.justBoxed.WorldBorderManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -12,6 +14,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -44,11 +47,17 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
 
         //delete the box under the world info
         setItemDeleteBox();
+
         //Box info
         setItemBoxInfo(box);
 
         //Member info
         setItemMemberInfo(box);
+
+        //go back to the allboxInfoInv
+        inventory.setItem(27, CreateItem.createItem(Component.text("Go back to Boxes information Menu").decoration(TextDecoration.ITALIC, false),
+                1,
+                Material.ARROW));
 
         Bukkit.getScheduler().runTaskLater(JustBoxed.getInstance(), () -> {
             if (!inventory.getViewers().isEmpty()) {
@@ -84,6 +93,7 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
 
             //World info
             if (event.getCurrentItem().getType().equals(Material.GRASS_BLOCK)) {
+
                 //World offline
                 if (event.getCurrentItem().lore().size() == 4){
                     //load and teleport
@@ -130,14 +140,30 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
                 //world online / loaded
                 else{
                     if (event.isRightClick()) {
+                        WorldBorderManager.setWorldBorder(box);
                         event.getWhoClicked().teleport(box.getSpawn());
                         event.getWhoClicked().sendActionBar(Component.text("Teleported to the box...", NamedTextColor.GOLD));
                         event.getWhoClicked().closeInventory();
                     }
-                    else if (event.isLeftClick()) {
+
+                    //simple leftClick
+                    else if (event.isLeftClick() && !event.isShiftClick()) {
                         if(!Bukkit.getWorld(box.getWorldName()).getPlayers().isEmpty()){
                             event.getWhoClicked().sendMessage(Component.text("This world cannot be unloaded because there are player inside...", NamedTextColor.RED));
                             return;
+                        }
+
+                        JustBoxed.worldManager.remove(JustBoxed.worldManager.get(Bukkit.getWorld(box.getWorldName())));
+                        Bukkit.unloadWorld(box.getWorldName(), true);
+                        event.getWhoClicked().sendMessage(Component.text(box.getWorldName() + " is unloaded!", NamedTextColor.GREEN));
+                    }
+
+                    //Shift + left click (force unload)
+                    else if (event.isLeftClick() && event.isShiftClick()) {
+                        if(!Bukkit.getWorld(box.getWorldName()).getPlayers().isEmpty()){
+                            for (Player player : Bukkit.getWorld(box.getWorldName()).getPlayers()) {
+                                player.teleport(Bukkit.getWorld("world").getSpawnLocation());
+                            }
                         }
 
                         JustBoxed.worldManager.remove(JustBoxed.worldManager.get(Bukkit.getWorld(box.getWorldName())));
@@ -149,6 +175,10 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
 
             else if (event.getCurrentItem().getType() == Material.RED_TERRACOTTA) {
                 event.getWhoClicked().openInventory(new DeleteBoxInventory(box).getInventory());
+            }
+
+            else if (event.getCurrentItem().getType() == Material.ARROW) {
+                event.getWhoClicked().openInventory(new AllBoxInfoInventory(1).getInventory());
             }
         }
     }
@@ -174,6 +204,7 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
             lore.add(Component.text(""));
             lore.add(Component.text("Right Click to teleport to the box", NamedTextColor.GRAY));
             lore.add(Component.text("Left Click to unload the world", NamedTextColor.GRAY));
+            lore.add(Component.text("Shift + Left Click to force-unload the world", NamedTextColor.GRAY));
         }
 
         worldInfoItemMeta.lore(lore);

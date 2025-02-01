@@ -34,13 +34,13 @@ public class ABoxedCommand implements CommandExecutor {
             if (args[0].equalsIgnoreCase("worldinfo")) {
                 if (JustBoxed.worldManager.getWorldsRunnables().isEmpty()) {
                     player.sendMessage("Empty");
+                    player.sendMessage(String.valueOf(Bukkit.getWorlds()));
                     return true;
                 }
                 JustBoxed.worldManager.getWorldsRunnables()
                         .forEach(worldRunnable -> player.sendMessage(worldRunnable.getWorld().getName()+ ": " + worldRunnable.getActiveTime()+ "s"));
             }
-
-            if (args[0].equalsIgnoreCase("info")) {
+            else if (args[0].equalsIgnoreCase("info")) {
 
                 if(args.length < 2) {
                     player.sendMessage("/abox info <world | player | box>");
@@ -139,6 +139,10 @@ public class ABoxedCommand implements CommandExecutor {
                         player.openInventory(new BoxInfoInventory(box).getInventory());
                     }
                 }
+            }
+
+            else{
+                player.sendMessage("§cThis command don't exist");
             }
         }
         return true;

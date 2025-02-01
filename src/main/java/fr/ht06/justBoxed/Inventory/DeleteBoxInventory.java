@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -92,7 +93,10 @@ public class DeleteBoxInventory implements InventoryHolder, Listener {
             deleteBox(box);
 
             //send a message and close the inv
-            event.getViewers().forEach(humanEntity -> {
+            //need to create a list of all the viewers before because when you close the inventory
+            //of the humanEntity, you get an error
+            List<HumanEntity> humanEntities = new ArrayList<>(event.getViewers());
+            humanEntities.forEach(humanEntity -> {
                 humanEntity.sendMessage(box.getName().append(Component.text(" is deleted", NamedTextColor.RED)));
                 humanEntity.closeInventory();
             });

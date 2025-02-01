@@ -69,7 +69,10 @@ public class BoxManager {
     public void removeBox(Box box) {
 
         //For revoke all advancement
-        AdvancementManager.revokeAllAdvancement(Bukkit.getOfflinePlayer(box.getOwner()).getPlayer());
+        if (Bukkit.getOfflinePlayer(box.getOwner()).getPlayer() != null){
+            AdvancementManager.revokeAllAdvancement(Bukkit.getOfflinePlayer(box.getOwner()).getPlayer());
+        }
+
         box.getMembers().forEach(member -> {
             if (Bukkit.getOfflinePlayer(member).isOnline()){
                 AdvancementManager.revokeAllAdvancement(Bukkit.getOfflinePlayer(member).getPlayer());
