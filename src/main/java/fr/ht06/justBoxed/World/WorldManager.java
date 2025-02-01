@@ -1,6 +1,7 @@
 package fr.ht06.justBoxed.World;
 
 import fr.ht06.justBoxed.Runnable.WorldRunnable;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ public class WorldManager {
     }
 
     public void remove(WorldRunnable worldRunnable) {
-        worldRunnable.cancel();
         worldsRunnables.remove(worldRunnable);
     }
 

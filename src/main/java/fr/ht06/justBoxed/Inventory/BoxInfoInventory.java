@@ -31,7 +31,7 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
     Inventory inventory;
 
     public BoxInfoInventory(Box box) {
-        this.inventory = Bukkit.createInventory(this, 27, box.getName());
+        this.inventory = Bukkit.createInventory(this, 36, box.getName());
         init(box);
     }
 
@@ -42,6 +42,8 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
         //World info
         setItemWorldInfo(box);
 
+        //delete the box under the world info
+        setItemDeleteBox();
         //Box info
         setItemBoxInfo(box);
 
@@ -56,6 +58,8 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
 
     }
 
+
+
     @Override
     public @NotNull Inventory getInventory() {
         return inventory;
@@ -63,7 +67,6 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-//        event.getWhoClicked().closeInventory();
 
         if (event.getClickedInventory() == null) return;
 
@@ -79,6 +82,7 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
 
             if (event.getCurrentItem().getType() == null) return;
 
+            //World info
             if (event.getCurrentItem().getType().equals(Material.GRASS_BLOCK)) {
                 //World offline
                 if (event.getCurrentItem().lore().size() == 4){
@@ -142,6 +146,10 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
                     }
                 }
             }
+
+            else if (event.getCurrentItem().getType() == Material.RED_TERRACOTTA) {
+                event.getWhoClicked().openInventory(new DeleteBoxInventory(box).getInventory());
+            }
         }
     }
 
@@ -173,6 +181,14 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
         inventory.setItem(11, worldInfo);
     }
 
+    private void setItemDeleteBox() {
+        ItemStack itemDelete = new ItemStack(Material.RED_TERRACOTTA);
+        ItemMeta meta = itemDelete.getItemMeta();
+        meta.displayName(Component.text("Delete this box?", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
+        itemDelete.setItemMeta(meta);
+        inventory.setItem(20, itemDelete);
+    }
+
     private void setItemBoxInfo(Box box) {
         ItemStack boxItem = new ItemStack(Material.CHEST);
         ItemMeta boxMeta = boxItem.getItemMeta();
@@ -191,15 +207,15 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
     private void setItemMemberInfo(Box box) {
         ItemStack playerItem = new ItemStack(Material.ARMOR_STAND);
         ItemMeta playerMeta = playerItem.getItemMeta();
-        playerMeta.displayName(Component.text("Player info: ", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
+        playerMeta.displayName(Component.text("Player info: ").decoration(TextDecoration.ITALIC, false));
 
         List<Component> lore = new ArrayList<>();
         //owner
-        lore.add(Component.text("Owner: " + Bukkit.getOfflinePlayer(box.getOwner()).getName(), TextColor.color(0xd35400)));
+        lore.add(Component.text("Owner: " + Bukkit.getOfflinePlayer(box.getOwner()).getName(), TextColor.color(0xC7392B)));
         //members
         if(!box.getMembers().isEmpty()){
-            lore.add(Component.text("Member(s): ", TextColor.color(0xD27D0F)));
-            box.getMembers().forEach(member -> lore.add(Component.text("- "+Bukkit.getOfflinePlayer(member).getName(), TextColor.color(0xD27D0F))));
+            lore.add(Component.text("Member(s): ", TextColor.color(0x558CD2)));
+            box.getMembers().forEach(member -> lore.add(Component.text("- "+Bukkit.getOfflinePlayer(member).getName(), TextColor.color(0x558CD2))));
         }
         playerMeta.lore(lore);
         playerItem.setItemMeta(playerMeta);

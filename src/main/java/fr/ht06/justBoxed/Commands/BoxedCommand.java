@@ -517,7 +517,7 @@ public class BoxedCommand implements CommandExecutor {
                 }
 
                 if (args.length < 2){
-                    player.sendMessage("§c/box setname <name> (you can use this: https://webui.advntr.dev/)");
+                    player.sendMessage("§c/box setname <name> (you can use this: https://webui.advntr.dev/ )");
                     return true;
                 }
 
@@ -544,7 +544,12 @@ public class BoxedCommand implements CommandExecutor {
                 }
 
                 //check if the plain name if already taken , if yes cancel
-                if (!JustBoxed.boxManager.nameTaken(name)){
+                //but if the (plain) name is the same as before, change it
+                if (PlainTextComponentSerializer.plainText().serialize(box.getName()).equalsIgnoreCase(tempStr)){
+                    box.setName(name);
+                    box.broadcastMessage(Component.text("§aThe new name of the box is: ").append(box.getName()));
+                }
+                else if (!JustBoxed.boxManager.nameTaken(name)){
                     box.setName(name);
 
                     box.broadcastMessage(Component.text("§aThe new name of the box is: ").append(box.getName()));

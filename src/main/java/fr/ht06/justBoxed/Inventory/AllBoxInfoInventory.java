@@ -2,6 +2,7 @@ package fr.ht06.justBoxed.Inventory;
 
 import fr.ht06.justBoxed.Box.Box;
 import fr.ht06.justBoxed.JustBoxed;
+import fr.ht06.justBoxed.Utils.CreateItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -34,6 +35,12 @@ public class AllBoxInfoInventory implements InventoryHolder, Listener {
     }
 
     private void init(int page) {
+
+        if (JustBoxed.boxManager.getBoxes().isEmpty()) {
+            Component name =  Component.text("No boxes found", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false);
+            inventory.setItem(22, CreateItem.createItem(name, 1, Material.BARRIER, List.of(Component.text("This is so calm for the moment", NamedTextColor.GRAY))));
+        }
+
         for (int slot = 0; slot < 44; slot++) {
             if (44*(page-1)+slot >= JustBoxed.boxManager.getBoxes().size()) break;
             Box box = JustBoxed.boxManager.getBoxes().get(44*(page-1)+slot);
@@ -89,14 +96,13 @@ public class AllBoxInfoInventory implements InventoryHolder, Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-//        event.getWhoClicked().closeInventory();
 
         if (event.getClickedInventory() == null) return;
 
         if (event.getClickedInventory().getHolder() instanceof AllBoxInfoInventory) {
             if (event.getCurrentItem() == null) return;
 
-            //Vérification si c'estle bon inventaire
+            //page -1
             event.setCancelled(true);
             if (event.getSlot() == 44 && event.getCurrentItem().getType().equals(Material.ARROW)) {
                 event.getWhoClicked().closeInventory();
@@ -104,12 +110,15 @@ public class AllBoxInfoInventory implements InventoryHolder, Listener {
                 return;
             }
 
+            //page +1
             if (event.getSlot() == 53 && event.getCurrentItem().getType().equals(Material.ARROW)) {
                 event.getWhoClicked().closeInventory();
                 event.getWhoClicked().openInventory(new AllBoxInfoInventory(page+1).getInventory());
                 return;
             }
             if (event.getInventory().isEmpty()) return;
+
+            //get the box
             Component boxComp = event.getCurrentItem().lore().getFirst();
             String boxUUID = PlainTextComponentSerializer.plainText().serialize(boxComp);
             UUID uuid = UUID.fromString(boxUUID);

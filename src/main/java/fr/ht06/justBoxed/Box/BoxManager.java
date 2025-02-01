@@ -28,6 +28,10 @@ public class BoxManager {
         return boxes.stream().filter(box -> box.getName().equals(name)).findFirst().orElse(null);
     }
 
+    public Box getBoxByPlainName(String name) {
+        return boxes.stream().filter(box -> PlainTextComponentSerializer.plainText().serialize(box.getName()).equals(name)).findFirst().orElse(null);
+    }
+
     public Box getBoxByWorldName(String worldname) {
         return boxes.stream().filter(box -> box.getWorldName().equalsIgnoreCase(worldname)).findFirst().orElse(null);
     }

@@ -27,15 +27,15 @@ public class MainInventory implements InventoryHolder, Listener {
     }
 
     private void init() {
-        int amountWorld = JustBoxed.worldManager.getWorldsRunnables().size();
-        if (amountWorld == 0) amountWorld = 1;
-        ItemStack itemWorld = new ItemStack(Material.GRASS_BLOCK, amountWorld);
-        ItemMeta itemWorldMeta = itemWorld.getItemMeta();
+        int amountBox = JustBoxed.boxManager.getBoxes().size();
+        if (amountBox == 0) amountBox = 1;
+        ItemStack itemBox = new ItemStack(Material.CHEST, amountBox);
+        ItemMeta itemBoxMeta = itemBox.getItemMeta();
 
-        itemWorldMeta.displayName(Component.text("Worlds Information").decoration(TextDecoration.ITALIC, false));
-        itemWorldMeta.lore(List.of(Component.text("See information about all boxes worlds", NamedTextColor.GRAY)));
-        itemWorld.setItemMeta(itemWorldMeta);
-        inventory.setItem(13, itemWorld);
+        itemBoxMeta.displayName(Component.text("Boxes Information").decoration(TextDecoration.ITALIC, false));
+        itemBoxMeta.lore(List.of(Component.text("See information about boxes", NamedTextColor.GRAY)));
+        itemBox.setItemMeta(itemBoxMeta);
+        inventory.setItem(13, itemBox);
 
     }
 
@@ -46,12 +46,12 @@ public class MainInventory implements InventoryHolder, Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-//        event.getWhoClicked().closeInventory();
 
         if (event.getClickedInventory() == null) return;
 
-        if (event.getClickedInventory().getHolder() instanceof MainInventory) {//Vérification si c'estle bon inventaire
+        if (event.getClickedInventory().getHolder() instanceof MainInventory) {
             event.setCancelled(true);
+            //boxInfo
             if (event.getSlot() == 13) {
                 event.getWhoClicked().closeInventory();
                 event.getWhoClicked().openInventory(new AllBoxInfoInventory(1).getInventory());

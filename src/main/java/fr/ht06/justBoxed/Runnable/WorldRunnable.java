@@ -45,6 +45,11 @@ public class WorldRunnable extends BukkitRunnable {
             @Override
             public void run() {
 
+                if (this.isCancelled()){
+                    cancel();
+                    return;
+                }
+
                 if(world != null) {
                     if(world.getPlayers().isEmpty()) {
 //                        Bukkit.broadcast(Component.text("Inactive Check " + inactiveTime/20 + " second for " +world.getName()+": UNLOAD", NamedTextColor.RED));
