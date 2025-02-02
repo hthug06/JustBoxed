@@ -450,6 +450,8 @@ public class BoxedCommand implements CommandExecutor {
                             public void run() {
                                 player.sendActionBar(Component.text("Loading your box world...", NamedTextColor.GOLD));
                                 if (Bukkit.getWorld(box.getWorldName()) != null){
+                                    Bukkit.getWorld(box.getWorldName()).setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, JustBoxed.getInstance().getConfig().getBoolean("announceAdvancements"));
+
                                     player.teleport(box.getSpawn());
                                     player.sendActionBar(Component.text("World Loaded!", NamedTextColor.GREEN));
                                     cancel();
@@ -560,6 +562,7 @@ public class BoxedCommand implements CommandExecutor {
 
             else if(args[0].equalsIgnoreCase("visit")){
 
+
                 //if the args are not equal to 2
                 if (args.length != 2){
                     player.sendMessage("§c/box visit <player>");
@@ -587,6 +590,10 @@ public class BoxedCommand implements CommandExecutor {
                         public void run() {
                             player.sendActionBar(Component.text("Loading " + playerToVisit.getName() +" box world...", NamedTextColor.GOLD));
                             if (Bukkit.getWorld(box.getWorldName()) != null){
+
+                                Bukkit.getWorld(box.getWorldName()).setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, JustBoxed.getInstance().getConfig().getBoolean("announceAdvancements"));
+
+
                                 player.teleport(box.getSpawn());
                                 player.sendMessage(Component.text("World Loaded!", NamedTextColor.GREEN));
                                 cancel();
@@ -648,8 +655,6 @@ public class BoxedCommand implements CommandExecutor {
     }
 
     public MiniMessage getCustomMM(){
-        //remove if bug in inventory with the name
-
         return MiniMessage.builder()
                 .tags(TagResolver.builder()
                         .resolver(StandardTags.color())
