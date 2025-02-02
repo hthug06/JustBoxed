@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Consumer;
 
 public class BoxedCommand implements CommandExecutor {
 
@@ -593,7 +592,7 @@ public class BoxedCommand implements CommandExecutor {
                                 cancel();
                             }
                         }
-                    }.runTaskTimerAsynchronously(JustBoxed.getInstance(), 0, 20);
+                    }.runTaskTimer(JustBoxed.getInstance(), 0, 20);
 
                 }
 
@@ -649,7 +648,9 @@ public class BoxedCommand implements CommandExecutor {
     }
 
     public MiniMessage getCustomMM(){
-        MiniMessage minimessage = MiniMessage.builder()
+        //remove if bug in inventory with the name
+
+        return MiniMessage.builder()
                 .tags(TagResolver.builder()
                         .resolver(StandardTags.color())
                         .resolver(StandardTags.font())   //remove if bug in inventory with the name
@@ -665,8 +666,6 @@ public class BoxedCommand implements CommandExecutor {
                         .build()
                 )
                 .build();
-
-        return minimessage;
     }
 }
 
