@@ -15,7 +15,7 @@ inviteTime: 60
 memberLimit: 5
 
 #Define how many block the border is going to expand with every advancement
-borderExpand: 1
+borderExpand: 5
 
 #Define after how many second the plugin check if a world is inactive and unload it (need reload / restart)
 inactivityUnload: 300

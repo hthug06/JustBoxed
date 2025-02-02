@@ -31,6 +31,8 @@ public class Box {
             this.uuid = UUID.randomUUID();
         }while (JustBoxed.boxManager.UUIDTaken(uuid));
 
+        AdvancementManager.revokeAllAdvancement(Bukkit.getPlayer(owner));
+
         this.name = name;
         this.owner = owner;
         this.spawn = spawn;
