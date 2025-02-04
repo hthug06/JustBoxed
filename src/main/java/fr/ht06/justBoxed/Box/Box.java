@@ -31,7 +31,10 @@ public class Box {
             this.uuid = UUID.randomUUID();
         }while (JustBoxed.boxManager.UUIDTaken(uuid));
 
-        AdvancementManager.revokeAllAdvancement(Bukkit.getPlayer(owner));
+        if  (Bukkit.getOfflinePlayer(owner).isOnline()) {
+            AdvancementManager.revokeAllAdvancement(Bukkit.getOfflinePlayer(owner).getPlayer());
+        }
+
 
         this.name = name;
         this.owner = owner;

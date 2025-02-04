@@ -1,5 +1,5 @@
 name: JustBoxed
-version: '1.0.3'
+version: '1.0.4'
 main: fr.ht06.justBoxed.JustBoxed
 api-version: '1.21'
 description: A Boxed Block Plugin

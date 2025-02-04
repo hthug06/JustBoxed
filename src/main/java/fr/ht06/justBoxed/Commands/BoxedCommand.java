@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Consumer;
 
 public class BoxedCommand implements CommandExecutor {
 
@@ -451,6 +450,8 @@ public class BoxedCommand implements CommandExecutor {
                             public void run() {
                                 player.sendActionBar(Component.text("Loading your box world...", NamedTextColor.GOLD));
                                 if (Bukkit.getWorld(box.getWorldName()) != null){
+                                    Bukkit.getWorld(box.getWorldName()).setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, JustBoxed.getInstance().getConfig().getBoolean("announceAdvancements"));
+
                                     player.teleport(box.getSpawn());
                                     player.sendActionBar(Component.text("World Loaded!", NamedTextColor.GREEN));
                                     cancel();
@@ -561,6 +562,7 @@ public class BoxedCommand implements CommandExecutor {
 
             else if(args[0].equalsIgnoreCase("visit")){
 
+
                 //if the args are not equal to 2
                 if (args.length != 2){
                     player.sendMessage("§c/box visit <player>");
@@ -588,12 +590,16 @@ public class BoxedCommand implements CommandExecutor {
                         public void run() {
                             player.sendActionBar(Component.text("Loading " + playerToVisit.getName() +" box world...", NamedTextColor.GOLD));
                             if (Bukkit.getWorld(box.getWorldName()) != null){
+
+                                Bukkit.getWorld(box.getWorldName()).setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, JustBoxed.getInstance().getConfig().getBoolean("announceAdvancements"));
+
+
                                 player.teleport(box.getSpawn());
                                 player.sendMessage(Component.text("World Loaded!", NamedTextColor.GREEN));
                                 cancel();
                             }
                         }
-                    }.runTaskTimerAsynchronously(JustBoxed.getInstance(), 0, 20);
+                    }.runTaskTimer(JustBoxed.getInstance(), 0, 20);
 
                 }
 
@@ -649,7 +655,7 @@ public class BoxedCommand implements CommandExecutor {
     }
 
     public MiniMessage getCustomMM(){
-        MiniMessage minimessage = MiniMessage.builder()
+        return MiniMessage.builder()
                 .tags(TagResolver.builder()
                         .resolver(StandardTags.color())
                         .resolver(StandardTags.font())   //remove if bug in inventory with the name
@@ -665,8 +671,6 @@ public class BoxedCommand implements CommandExecutor {
                         .build()
                 )
                 .build();
-
-        return minimessage;
     }
 }
 
