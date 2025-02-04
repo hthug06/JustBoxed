@@ -4,9 +4,12 @@ import fr.ht06.justBoxed.Config.DataConfig;
 import fr.ht06.justBoxed.JustBoxed;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+
+import java.io.File;
 import java.util.*;
 
 public class SaveBoxData {
@@ -14,6 +17,11 @@ public class SaveBoxData {
     //I think I'll try to implement SQL one day... 😅
 
     public static void save() {
+
+        if (new File(Bukkit.getServer().getPluginManager().getPlugin("JustBoxed").getDataFolder(), "data.yml").exists()){
+            JustBoxed.getInstance().getComponentLogger().info("§cThe data already exist which is not normal, the data don't change for security");
+            return;
+        }
 
         //Init data.yml
         DataConfig.setup();

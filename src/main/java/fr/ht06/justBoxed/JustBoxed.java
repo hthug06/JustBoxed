@@ -22,6 +22,7 @@ import org.bukkit.GameRule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.codehaus.plexus.util.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -46,9 +47,35 @@ public final class JustBoxed extends JavaPlugin {
         saveDefaultConfig();
 
         //might change later on
-        Bukkit.getWorld("world").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("announceAdvancements"));
-        Bukkit.getWorld("world_nether").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("announceAdvancements"));
-        Bukkit.getWorld("world_the_end").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("announceAdvancements"));
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (Bukkit.getWorld("world") != null){
+                    Bukkit.getWorld("world").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("announceAdvancements"));
+                    cancel();
+                }
+            }
+        }.runTaskTimer(this, 0, 20);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (Bukkit.getWorld("world_nether") != null){
+                    Bukkit.getWorld("world_nether").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("announceAdvancements"));
+                    cancel();
+                }
+            }
+        }.runTaskTimer(this, 0, 20);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (Bukkit.getWorld("world_the_end") != null){
+                    Bukkit.getWorld("world_the_end").setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, getConfig().getBoolean("announceAdvancements"));
+                    cancel();
+                }
+            }
+        }.runTaskTimer(this, 0, 20);
 
         //Commands
         getCommand("box").setExecutor(new BoxedCommand());
