@@ -26,11 +26,17 @@ public class ABoxedCommand implements CommandExecutor {
 
 
         if (args.length == 0) {
-            player.openInventory(new MainInventory().getInventory());
+            player.sendMessage("§cUsage: /abox <menu | info>");
             return true;
         }
         else{
 
+            if (args[0].equalsIgnoreCase("menu")) {
+                player.openInventory(new MainInventory().getInventory());
+                return true;
+            }
+
+            //hidden commands for dev
             if (args[0].equalsIgnoreCase("worldinfo")) {
                 if (JustBoxed.worldManager.getWorldsRunnables().isEmpty()) {
                     player.sendMessage("Empty");

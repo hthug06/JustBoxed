@@ -12,7 +12,7 @@ public class ABoxedTabCompleter implements TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if (args.length == 1) {
-            return List.of("info");
+            return List.of("info", "menu");
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("info")) {
             return List.of("player", "box", "world");
