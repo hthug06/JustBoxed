@@ -5,10 +5,7 @@ import fr.ht06.justBoxed.Box.BoxManager;
 import fr.ht06.justBoxed.Box.LoadBoxData;
 import fr.ht06.justBoxed.Box.SaveBoxData;
 import fr.ht06.justBoxed.Commands.ABoxedCommand;
-import fr.ht06.justBoxed.Inventory.AllBoxInfoInventory;
-import fr.ht06.justBoxed.Inventory.BoxInfoInventory;
-import fr.ht06.justBoxed.Inventory.DeleteBoxInventory;
-import fr.ht06.justBoxed.Inventory.MainInventory;
+import fr.ht06.justBoxed.Inventory.*;
 import fr.ht06.justBoxed.Runnable.WorldRunnable;
 import fr.ht06.justBoxed.Commands.BoxedCommand;
 import fr.ht06.justBoxed.Events.PlayerListeners;
@@ -115,6 +112,7 @@ public final class JustBoxed extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new AllBoxInfoInventory(1), this);
         getServer().getPluginManager().registerEvents(new BoxInfoInventory(), this);
         getServer().getPluginManager().registerEvents(new DeleteBoxInventory(), this);
+        getServer().getPluginManager().registerEvents(new WorldInfoInventory(), this);
     }
 
 }

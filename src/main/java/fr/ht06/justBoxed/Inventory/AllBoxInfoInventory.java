@@ -36,6 +36,9 @@ public class AllBoxInfoInventory implements InventoryHolder, Listener {
 
     private void init(int page) {
 
+        ItemStack itemBack = CreateItem.createItem(Component.text("Go back to the main page", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false), 1, Material.ARROW);
+        inventory.setItem(45, itemBack);
+
         if (JustBoxed.boxManager.getBoxes().isEmpty()) {
             Component name =  Component.text("No boxes found", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false);
             inventory.setItem(22, CreateItem.createItem(name, 1, Material.BARRIER, List.of(Component.text("This is so calm for the moment", NamedTextColor.GRAY))));
@@ -77,7 +80,7 @@ public class AllBoxInfoInventory implements InventoryHolder, Listener {
             ItemMeta meta = itemStack.getItemMeta();
             meta.displayName(Component.text("Go to page " + (page - 1)).decoration(TextDecoration.ITALIC, false));
             itemStack.setItemMeta(meta);
-            inventory.setItem(44, itemStack);
+            inventory.setItem(45, itemStack);
         }
 
         if (inventory.getStorageContents()[53] != null) {
@@ -102,9 +105,14 @@ public class AllBoxInfoInventory implements InventoryHolder, Listener {
         if (event.getClickedInventory().getHolder() instanceof AllBoxInfoInventory) {
             if (event.getCurrentItem() == null) return;
 
+            if (event.getSlot() == 45 && event.getCurrentItem().getType().equals(Material.ARROW)) {
+                event.getWhoClicked().openInventory(new MainInventory().getInventory());
+                return;
+            }
+
             //page -1
             event.setCancelled(true);
-            if (event.getSlot() == 44 && event.getCurrentItem().getType().equals(Material.ARROW)) {
+            if (event.getSlot() == 45 && event.getCurrentItem().getType().equals(Material.ARROW)) {
                 event.getWhoClicked().closeInventory();
                 event.getWhoClicked().openInventory(new AllBoxInfoInventory(page-1).getInventory());
                 return;

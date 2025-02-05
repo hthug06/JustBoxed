@@ -253,7 +253,7 @@ public class BoxInfoInventory implements InventoryHolder, Listener {
         inventory.setItem(13, playerItem);
     }
 
-    public String timeSerializer(int time) {
+    public static String timeSerializer(int time) {
         int hours = 0;
         while (time > 3600) {
             time -= 3600;

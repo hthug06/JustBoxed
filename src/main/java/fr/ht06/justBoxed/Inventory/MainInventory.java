@@ -27,6 +27,7 @@ public class MainInventory implements InventoryHolder, Listener {
     }
 
     private void init() {
+        //BOX
         int amountBox = JustBoxed.boxManager.getBoxes().size();
         if (amountBox == 0) amountBox = 1;
         ItemStack itemBox = new ItemStack(Material.CHEST, amountBox);
@@ -35,7 +36,19 @@ public class MainInventory implements InventoryHolder, Listener {
         itemBoxMeta.displayName(Component.text("Boxes Information").decoration(TextDecoration.ITALIC, false));
         itemBoxMeta.lore(List.of(Component.text("See information about boxes", NamedTextColor.GRAY)));
         itemBox.setItemMeta(itemBoxMeta);
-        inventory.setItem(13, itemBox);
+        inventory.setItem(11, itemBox);
+
+
+        //world
+        int amountWorldLoaded = JustBoxed.worldManager.getWorldsRunnables().size();
+        if (amountWorldLoaded == 0) amountWorldLoaded = 1;
+        ItemStack itemWorld = new ItemStack(Material.GRASS_BLOCK, amountWorldLoaded);
+        ItemMeta itemWorldMeta = itemWorld.getItemMeta();
+
+        itemWorldMeta.displayName(Component.text("Loaded worlds information").decoration(TextDecoration.ITALIC, false));
+        itemWorldMeta.lore(List.of(Component.text("See information about all the loaded worlds", NamedTextColor.GRAY)));
+        itemWorld.setItemMeta(itemWorldMeta);
+        inventory.setItem(15, itemWorld);
 
     }
 
@@ -52,9 +65,14 @@ public class MainInventory implements InventoryHolder, Listener {
         if (event.getClickedInventory().getHolder() instanceof MainInventory) {
             event.setCancelled(true);
             //boxInfo
-            if (event.getSlot() == 13) {
+            if (event.getSlot() == 11) {
                 event.getWhoClicked().closeInventory();
                 event.getWhoClicked().openInventory(new AllBoxInfoInventory(1).getInventory());
+            }
+
+            if (event.getSlot() == 15) {
+                event.getWhoClicked().closeInventory();
+                event.getWhoClicked().openInventory(new WorldInfoInventory(1).getInventory());
             }
         }
     }
